@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useProgress } from '../ProgressContext';
-import type { QuizQuestion } from '../lib/content';
+import { content, type QuizQuestion } from '../lib/content';
 import { recordQuiz, shuffle, type QuizOutcome } from '../lib/progress';
+import { computeXp } from '../lib/game';
 
 type Option = { text: string; correct: boolean };
 
@@ -15,6 +16,7 @@ export default function Quiz({ topicId, questions }: { topicId: string; question
   const [options, setOptions] = useState(() => prepare(questions));
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null));
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null);
+  const [xpGain, setXpGain] = useState(0);
 
   const checked = outcome !== null;
   const allAnswered = answers.every((a) => a !== null);
@@ -22,6 +24,8 @@ export default function Quiz({ topicId, questions }: { topicId: string; question
   function check() {
     const score = answers.filter((a, qi) => a !== null && options[qi][a].correct).length;
     const r = recordQuiz(progress, topicId, score, questions.length);
+    // Без XP за ачивки — их покажет отдельный тост.
+    setXpGain(computeXp(r.progress, content) - computeXp(progress, content));
     replace(r.progress);
     setOutcome(r.outcome);
   }
@@ -77,6 +81,7 @@ export default function Quiz({ topicId, questions }: { topicId: string; question
             {outcome.score} из {outcome.total}
           </p>
           <p>{resultText(outcome)}</p>
+          {xpGain > 0 && <p className="xp-gain">+{xpGain} XP</p>}
           <button className="btn" onClick={retry}>
             Пройти ещё раз
           </button>
