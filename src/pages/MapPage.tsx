@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useProgress } from '../ProgressContext';
 import { allTopics, content, findTopic, kindLabel, type Topic } from '../lib/content';
-import { nextTopicId, todayCount, topicsForReview, type Progress } from '../lib/progress';
+import { nextTopicId, topicsForReview, type Progress } from '../lib/progress';
 import ProgressBar from '../components/ProgressBar';
+import StatusBar from '../components/StatusBar';
 
 const orderedIds = allTopics.map((t) => t.id);
 
@@ -13,27 +14,16 @@ export default function MapPage() {
   const next = nextId ? findTopic(nextId) : undefined;
   const review = topicsForReview(progress, orderedIds, now);
   const doneTotal = orderedIds.filter((id) => progress.topics[id]).length;
-  const today = todayCount(progress, now);
 
   return (
     <>
+      <StatusBar />
+
       <section className="hero">
         <h1>{content.meta.title}</h1>
-        <p className="muted">{content.meta.goal}</p>
-        <div className="stats">
-          <div className="stat">
-            <span className="stat__value">
-              {doneTotal}/{orderedIds.length}
-            </span>
-            <span className="stat__label">тем пройдено</span>
-          </div>
-          <div className="stat">
-            <span className="stat__value">
-              {today}/{progress.dailyGoal}
-            </span>
-            <span className="stat__label">тем сегодня</span>
-          </div>
-        </div>
+        <p className="muted">
+          {content.meta.goal} · пройдено {doneTotal} из {orderedIds.length} тем
+        </p>
       </section>
 
       <section className="quick">
