@@ -282,3 +282,39 @@ a.quick__card:hover { background: var(--accent-soft); }
   .logo { white-space: nowrap; }
   .nav { width: 100%; margin: 0 -10px; padding-bottom: 6px; }
 }
+
+/* ---------- Этап 3: боссы ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.boss-list { list-style: none; padding: 0; margin: 20px 0 0; }
+.boss__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 4px; }
+.boss__head h2 { margin: 0; font-weight: 700; }
+.boss__stats { color: var(--text); }
+.boss__go { text-decoration: none; display: inline-block; }
+.boss--passed { border-color: #cbe8d3; }
+.boss--locked { background: #f1f0eb; }
+.boss--locked h2 { color: var(--muted); }
+.pill:not(.pill--ok) { background: #e6e4dd; color: var(--muted); }
+
+.exam-intro h1 { margin-top: 6px; }
+.exam-intro .recap { margin-bottom: 12px; }
+.exam__bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; font-weight: 600; }
+.timer {
+  font-family: var(--font-head); font-variant-numeric: tabular-nums; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 4px 12px; min-width: 72px; text-align: center;
+}
+.exam__progress { margin-bottom: 16px; }
+.exam .question { padding: 20px; margin-bottom: 16px; }
+.exam__topic { margin-bottom: 4px; }
+.exam__q { font-weight: 600; font-size: 1.05rem; }
+.exam__nav { justify-content: space-between; }
+.exam__key-title { font-size: 1rem; margin-top: 16px; }
+.exam .notes { margin-bottom: 12px; min-height: 100px; }
+.review { list-style: none; padding: 0; margin: 0; }
+.review__item--ok { border-left: 4px solid var(--ok); }
+.review__item--bad { border-left: 4px solid var(--bad); }
+.wrong { color: var(--bad); }
+.rate .btn { flex: 1; min-width: 100px; }
+.rate--good:hover:not(:disabled) { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.rate--partial:hover:not(:disabled) { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.rate--bad:hover:not(:disabled) { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.exam .result { margin-bottom: 24px; }
