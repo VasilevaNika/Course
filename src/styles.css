@@ -61,11 +61,6 @@ a { color: var(--accent); }
 .eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: var(--accent); }
 
 /* Карта */
-.hero { margin-bottom: 20px; }
-.stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; display: flex; flex-direction: column; }
-.stat__value { font-family: var(--font-head); font-size: 1.2rem; }
-.stat__label { font-size: 0.8rem; color: var(--muted); }
 
 .quick { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; }
 .quick__card { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; margin-bottom: 0; }
@@ -196,4 +191,94 @@ a.quick__card:hover { background: var(--accent-soft); }
   .pager__link { max-width: none; }
   .pager__link--next { text-align: left; }
   .logo { font-size: 0.9rem; }
+}
+
+/* ---------- Этап 2: геймификация ---------- */
+.hero { margin: 8px 0 20px; }
+
+.statusbar { display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; }
+.statusbar__rank { display: flex; align-items: center; gap: 12px; }
+.statusbar__rank-name { font-family: var(--font-head); font-weight: 700; }
+.rank-badge {
+  width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center;
+  font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; color: #fff; background: #8a8a8f;
+}
+.rank-badge--iron { background: #7c7c82; }
+.rank-badge--bronze { background: #a5683b; }
+.rank-badge--silver { background: #8e9aa6; }
+.rank-badge--gold { background: #c99a1e; }
+.rank-badge--platinum { background: #3f9e9a; }
+.rank-badge--diamond { background: #3b82c4; }
+.rank-badge--master { background: #7c3aed; }
+.rank-badge--grandmaster { background: var(--accent); }
+.statusbar__xp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; font-weight: 600; }
+.statusbar__facts { display: flex; gap: 10px; }
+.fact { display: flex; flex-direction: column; padding: 6px 12px; border-radius: 12px; background: #f6f5f1; min-width: 88px; }
+.fact__value { font-family: var(--font-head); font-size: 1.1rem; }
+.fact__label { font-size: 0.75rem; color: var(--muted); }
+.fact--done { background: var(--ok-soft); }
+.fact--done .fact__label { color: var(--ok); }
+
+.xp-gain { font-family: var(--font-head); color: var(--accent); font-weight: 700; }
+
+/* Тосты */
+.toasts { position: fixed; right: 16px; bottom: 16px; z-index: 50; display: grid; gap: 10px; width: min(360px, calc(100vw - 32px)); }
+.toast {
+  display: flex; gap: 8px; align-items: flex-start; background: var(--surface); border: 1px solid var(--accent);
+  border-radius: 14px; padding: 14px 14px 14px 16px; box-shadow: 0 10px 30px rgba(30, 30, 60, 0.15);
+  animation: toast-in 0.25s ease-out;
+}
+.toast__body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.toast__title { font-family: var(--font-head); font-weight: 500; }
+.toast__close { border: 0; background: none; font-size: 1.3rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 0 4px; }
+@keyframes toast-in { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Ачивки */
+.ach-grid { list-style: none; padding: 0; margin: 20px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.ach { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.ach__icon {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--font-head); font-weight: 700; background: var(--accent); color: #fff;
+}
+.ach__title { margin: 4px 0 0; font-size: 1rem; }
+.ach__cond { margin: 0; }
+.ach__date { margin: 0; color: var(--ok); }
+.ach__reward { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.ach--locked { background: #f1f0eb; }
+.ach--locked .ach__icon { background: #cfcdc5; }
+.ach--locked .ach__title, .ach--locked .ach__reward { color: var(--muted); }
+.btn--small { padding: 6px 12px; font-size: 0.9rem; text-decoration: none; display: inline-block; }
+.pill { font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.pill--ok { background: var(--ok-soft); color: var(--ok); }
+
+/* Купон */
+.coupon-wrap { max-width: 480px; margin: 0 auto; }
+.coupon {
+  position: relative; background: var(--surface); border: 2px dashed var(--accent); border-radius: 20px;
+  padding: 28px 24px; text-align: center; margin-bottom: 16px; overflow: hidden;
+}
+.coupon__reward { font-family: var(--font-head); font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 700; margin: 12px 0; }
+.coupon__for { margin-bottom: 16px; }
+.coupon__meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; text-align: left; font-size: 0.9rem; margin: 0 0 20px; }
+.coupon__meta dt { color: var(--muted); }
+.coupon__meta dd { margin: 0; }
+.coupon--issued { border-color: var(--ok); }
+.coupon__stamp {
+  display: inline-block; font-family: var(--font-head); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ok); border: 3px solid var(--ok); border-radius: 10px; padding: 4px 16px; transform: rotate(-6deg); margin: 0;
+}
+
+@media (max-width: 640px) {
+  .statusbar { grid-template-columns: 1fr; gap: 14px; }
+  .statusbar__facts .fact { flex: 1; }
+  .ach-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ach { padding: 14px; }
+}
+@media (max-width: 380px) {
+  .ach-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .topbar__inner { flex-wrap: wrap; gap: 0; padding-top: 8px; }
+  .logo { white-space: nowrap; }
+  .nav { width: 100%; margin: 0 -10px; padding-bottom: 6px; }
 }

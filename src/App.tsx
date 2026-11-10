@@ -4,6 +4,9 @@ import { content } from './lib/content';
 import MapPage from './pages/MapPage';
 import TopicPage from './pages/TopicPage';
 import SettingsPage from './pages/SettingsPage';
+import AchievementsPage from './pages/AchievementsPage';
+import CouponPage from './pages/CouponPage';
+import Toasts from './components/Toasts';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -26,14 +29,18 @@ export default function App() {
             <NavLink to="/" end>
               Карта
             </NavLink>
+            <NavLink to="/achievements">Ачивки</NavLink>
             <NavLink to="/settings">Настройки</NavLink>
           </nav>
         </div>
       </header>
+      <Toasts />
       <main className="container main">
         <Routes>
           <Route path="/" element={<MapPage />} />
           <Route path="/topic/:id" element={<TopicPage />} />
+          <Route path="/achievements" element={<AchievementsPage />} />
+          <Route path="/coupon/:id" element={<CouponPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

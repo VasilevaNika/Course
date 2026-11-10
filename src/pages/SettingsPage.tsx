@@ -12,7 +12,7 @@ export default function SettingsPage() {
     try {
       const p = await readProgressFile(file);
       if (!window.confirm('Заменить текущий прогресс данными из файла?')) return;
-      replace(p);
+      replace(p, { silent: true });
       setMessage({ ok: true, text: `Прогресс загружен: ${Object.keys(p.topics).length} тем пройдено.` });
     } catch (e) {
       setMessage({ ok: false, text: e instanceof Error ? e.message : 'Не удалось прочитать файл' });
