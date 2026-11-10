@@ -1,0 +1,561 @@
+{
+  "meta": {
+    "title": "Дата-квест Ники",
+    "learner": "Ника Писарева",
+    "goal": "Python backend (10 мес. коммерции) → Junior Data Engineer",
+    "note": "В каждом вопросе правильный ответ — options[0]. Перемешивать варианты при показе."
+  },
+  "blocks": [
+    {
+      "id": "py",
+      "title": "Python: фундамент",
+      "kind": "repeat",
+      "description": "То, на чём стоит вся работа. Быстро освежить и закрыть дыры, о которых любят спрашивать на собесах.",
+      "topics": [
+        {
+          "id": "py-oop",
+          "title": "ООП и модель данных",
+          "minutes": 40,
+          "recap": ["Инкапсуляция, наследование, полиморфизм", "MRO и super()", "Dunder-методы: __repr__, __eq__, __hash__, __len__, __iter__", "@property, @classmethod, @staticmethod", "dataclasses и abc"],
+          "materials": [
+            {"type": "док", "title": "Модель данных Python", "url": "https://docs.python.org/3/reference/datamodel.html"},
+            {"type": "статья", "title": "ООП в Python (Real Python)", "url": "https://realpython.com/python3-object-oriented-programming/"},
+            {"type": "док", "title": "dataclasses", "url": "https://docs.python.org/3/library/dataclasses.html"},
+            {"type": "видео", "title": "Подборка видео: ООП и магические методы", "url": "https://www.youtube.com/results?search_query=python+ооп+магические+методы"}
+          ],
+          "quiz": [
+            {"q": "Какой метод вызывается при len(obj)?", "options": ["__len__", "__size__", "__count__", "len() не работает с пользовательскими объектами"], "explain": "len() вызывает obj.__len__()."},
+            {"q": "Чем @classmethod отличается от @staticmethod?", "options": ["classmethod получает класс (cls) первым аргументом, staticmethod — ничего", "staticmethod получает cls, classmethod — ничего", "Ничем, это синонимы", "staticmethod нельзя вызвать у экземпляра"], "explain": "classmethod удобен для альтернативных конструкторов, staticmethod — просто функция в пространстве имён класса."},
+            {"q": "Что даёт @dataclass(frozen=True)?", "options": ["Запрещает менять поля после создания и делает объект хешируемым", "Запрещает наследоваться от класса", "Кэширует экземпляры", "Делает поля приватными"], "explain": "Попытка присвоить поле бросит FrozenInstanceError; генерируется __hash__."}
+          ]
+        },
+        {
+          "id": "py-func",
+          "title": "Декораторы, генераторы, контекстные менеджеры",
+          "minutes": 40,
+          "recap": ["Замыкания и декораторы, декоратор с аргументами", "functools.wraps, lru_cache", "Генераторы, yield, yield from, генераторные выражения", "Контекстные менеджеры: __enter__/__exit__, contextlib.contextmanager"],
+          "materials": [
+            {"type": "статья", "title": "Primer on Python Decorators", "url": "https://realpython.com/primer-on-python-decorators/"},
+            {"type": "статья", "title": "Introduction to Generators", "url": "https://realpython.com/introduction-to-python-generators/"},
+            {"type": "док", "title": "contextlib", "url": "https://docs.python.org/3/library/contextlib.html"}
+          ],
+          "quiz": [
+            {"q": "Зачем в декораторе functools.wraps?", "options": ["Сохраняет __name__, __doc__ и другие атрибуты исходной функции", "Ускоряет вызов функции", "Делает декоратор асинхронным", "Позволяет передавать аргументы в декоратор"], "explain": "Без wraps обёрнутая функция «теряет» имя и докстринг — ломаются логи, FastAPI-роуты, отладка."},
+            {"q": "Чем генератор лучше списка при обработке файла на 10 ГБ?", "options": ["Отдаёт элементы по одному и не держит всё в памяти", "Работает в несколько потоков", "Автоматически сжимает данные", "Ничем, список быстрее всегда"], "explain": "Генератор ленивый: в памяти только текущий элемент."},
+            {"q": "Какие методы реализует контекстный менеджер?", "options": ["__enter__ и __exit__", "__init__ и __del__", "__open__ и __close__", "__start__ и __stop__"], "explain": "__exit__ вызывается даже при исключении — поэтому with надёжно закрывает ресурсы."}
+          ]
+        },
+        {
+          "id": "py-typing",
+          "title": "Типизация и PEP 8",
+          "minutes": 30,
+          "recap": ["Аннотации не проверяются в рантайме", "Optional / X | None, Generic, TypeVar, Protocol", "mypy в CI", "PEP 8: именование, импорты, длина строк"],
+          "materials": [
+            {"type": "док", "title": "typing", "url": "https://docs.python.org/3/library/typing.html"},
+            {"type": "док", "title": "mypy", "url": "https://mypy.readthedocs.io/en/stable/"},
+            {"type": "док", "title": "PEP 8", "url": "https://peps.python.org/pep-0008/"}
+          ],
+          "quiz": [
+            {"q": "Что Python проверяет в рантайме по аннотации def f(x: int)?", "options": ["Ничего — аннотации интерпретатор не проверяет", "Тип x при каждом вызове", "Тип x только в debug-режиме", "Что x не None"], "explain": "Проверяют внешние инструменты (mypy) или библиотеки вроде Pydantic."},
+            {"q": "Когда нужен Protocol?", "options": ["Для структурной типизации: подходит любой объект с нужными методами, без наследования", "Для объявления сетевого протокола", "Чтобы запретить наследование", "Для асинхронных функций"], "explain": "Это «утиная типизация», понятная mypy."},
+            {"q": "Как в Python 3.10+ записать «int или None»?", "options": ["int | None", "int or None", "int & None", "Union(int, None)"], "explain": "Эквивалент Optional[int]."}
+          ]
+        },
+        {
+          "id": "py-async",
+          "title": "async/await и asyncio",
+          "minutes": 45,
+          "recap": ["Event loop, корутины, задачи", "asyncio.gather, create_task, TaskGroup", "Блокирующий код в async и run_in_executor", "I/O-bound vs CPU-bound, GIL"],
+          "materials": [
+            {"type": "статья", "title": "Async IO in Python", "url": "https://realpython.com/async-io-python/"},
+            {"type": "док", "title": "asyncio", "url": "https://docs.python.org/3/library/asyncio.html"},
+            {"type": "видео", "title": "Подборка видео: asyncio простыми словами", "url": "https://www.youtube.com/results?search_query=asyncio+python+объяснение"}
+          ],
+          "quiz": [
+            {"q": "Что будет, если в async-функции вызвать time.sleep(5)?", "options": ["Заблокируется весь event loop, остальные корутины тоже ждут", "Корутина уснёт, остальные продолжат работу", "Будет SyntaxError", "Python сам заменит на asyncio.sleep"], "explain": "В корутине нужен await asyncio.sleep(), а блокирующие вызовы — в executor."},
+            {"q": "Как запустить три корутины конкурентно и дождаться всех?", "options": ["await asyncio.gather(a(), b(), c())", "await a(); await b(); await c()", "asyncio.run(a(), b(), c())", "threading.Thread для каждой"], "explain": "Последовательные await выполняют их по очереди."},
+            {"q": "Где asyncio даёт выигрыш?", "options": ["В I/O-bound задачах: сеть, БД, файлы", "В CPU-bound вычислениях", "Везде одинаково", "Только в GUI"], "explain": "Для CPU-bound нужны процессы (multiprocessing), т.к. GIL."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sql",
+      "title": "SQL",
+      "kind": "repeat",
+      "description": "Главный инструмент дата-инженера. JOIN и агрегации она знает — добавляем оконные функции и транзакции.",
+      "topics": [
+        {
+          "id": "sql-join",
+          "title": "JOIN и агрегации",
+          "minutes": 35,
+          "recap": ["INNER / LEFT / FULL / CROSS JOIN", "GROUP BY, HAVING, агрегаты", "NULL в агрегатах и сравнениях", "Порядок выполнения: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY"],
+          "materials": [
+            {"type": "практика", "title": "PostgreSQL Exercises", "url": "https://pgexercises.com/"},
+            {"type": "практика", "title": "LeetCode SQL 50", "url": "https://leetcode.com/studyplan/top-sql-50/"},
+            {"type": "док", "title": "Соединения таблиц (PostgreSQL)", "url": "https://www.postgresql.org/docs/current/tutorial-join.html"}
+          ],
+          "quiz": [
+            {"q": "users LEFT JOIN orders: что вернётся для пользователя без заказов?", "options": ["Строка пользователя с NULL в колонках orders", "Ничего, строка отбросится", "Ошибка", "Строка с нулями в колонках orders"], "explain": "LEFT JOIN сохраняет все строки левой таблицы."},
+            {"q": "Чем WHERE отличается от HAVING?", "options": ["WHERE фильтрует строки до группировки, HAVING — группы после", "Ничем", "HAVING работает только с JOIN", "WHERE нельзя использовать с GROUP BY"], "explain": "Условия на агрегаты (COUNT(*) > 5) — только в HAVING."},
+            {"q": "COUNT(*) против COUNT(col)?", "options": ["COUNT(col) не считает строки, где col IS NULL", "Одинаковы всегда", "COUNT(*) не считает NULL", "COUNT(col) считает только уникальные"], "explain": "Уникальные — COUNT(DISTINCT col)."}
+          ]
+        },
+        {
+          "id": "sql-sub",
+          "title": "Подзапросы и CTE",
+          "minutes": 35,
+          "recap": ["Скалярные, табличные, коррелированные подзапросы", "EXISTS vs IN, ловушка NOT IN с NULL", "WITH и WITH RECURSIVE"],
+          "materials": [
+            {"type": "док", "title": "WITH-запросы (PostgreSQL)", "url": "https://www.postgresql.org/docs/current/queries-with.html"},
+            {"type": "практика", "title": "SQL-упражнения sql-ex.ru", "url": "https://sql-ex.ru/"}
+          ],
+          "quiz": [
+            {"q": "Что вернёт WHERE id NOT IN (подзапрос), если подзапрос содержит NULL?", "options": ["Пустой результат — условие никогда не станет истинным", "Все строки", "Ошибку", "Строки, где id IS NULL"], "explain": "x NOT IN (1, NULL) → UNKNOWN. Безопаснее NOT EXISTS."},
+            {"q": "Что такое коррелированный подзапрос?", "options": ["Подзапрос, который ссылается на колонки внешнего запроса", "Подзапрос внутри CTE", "Подзапрос с JOIN", "Подзапрос, выполняемый один раз"], "explain": "Логически вычисляется для каждой строки внешнего запроса."},
+            {"q": "Для чего WITH RECURSIVE?", "options": ["Обход иерархий: дерево категорий, оргструктура, графы", "Ускорить любой запрос", "Рекурсивно удалить таблицы", "Создать временную таблицу"], "explain": "Якорная часть + рекурсивная часть через UNION ALL."}
+          ]
+        },
+        {
+          "id": "sql-window",
+          "title": "Оконные функции",
+          "new": true,
+          "minutes": 50,
+          "recap": ["OVER (PARTITION BY … ORDER BY …)", "ROW_NUMBER, RANK, DENSE_RANK", "LAG / LEAD, нарастающие итоги, скользящие средние", "Рамка окна ROWS BETWEEN"],
+          "materials": [
+            {"type": "док", "title": "Оконные функции (PostgreSQL)", "url": "https://www.postgresql.org/docs/current/tutorial-window.html"},
+            {"type": "статья", "title": "Window functions (Mode SQL Tutorial)", "url": "https://mode.com/sql-tutorial/sql-window-functions"},
+            {"type": "видео", "title": "Подборка видео: оконные функции SQL", "url": "https://www.youtube.com/results?search_query=оконные+функции+sql"}
+          ],
+          "quiz": [
+            {"q": "Чем ROW_NUMBER() отличается от RANK()?", "options": ["RANK даёт равным значениям одинаковый номер и пропускает следующие, ROW_NUMBER всегда уникален", "Ничем", "ROW_NUMBER пропускает номера", "RANK работает без ORDER BY"], "explain": "DENSE_RANK — как RANK, но без пропусков."},
+            {"q": "Как посчитать нарастающий итог продаж по дате?", "options": ["SUM(amount) OVER (ORDER BY date)", "SUM(amount) GROUP BY date", "CUMSUM(amount)", "SUM(amount) OVER ()"], "explain": "OVER () без ORDER BY даёт общую сумму в каждой строке."},
+            {"q": "Можно ли использовать оконную функцию в WHERE?", "options": ["Нет — нужно обернуть в подзапрос или CTE", "Да, без ограничений", "Только ROW_NUMBER", "Только в PostgreSQL 16+"], "explain": "Окна вычисляются после WHERE."}
+          ]
+        },
+        {
+          "id": "sql-tx",
+          "title": "Транзакции и изоляция",
+          "new": true,
+          "minutes": 40,
+          "recap": ["ACID", "Read Committed, Repeatable Read, Serializable", "Аномалии: грязное, неповторяемое, фантомное чтение, потерянное обновление", "SELECT … FOR UPDATE, дедлоки"],
+          "materials": [
+            {"type": "док", "title": "Изоляция транзакций (PostgreSQL)", "url": "https://www.postgresql.org/docs/current/transaction-iso.html"},
+            {"type": "книга", "title": "Е. Рогов «PostgreSQL изнутри» (бесплатно)", "url": "https://postgrespro.ru/education/books/internals"}
+          ],
+          "quiz": [
+            {"q": "Уровень изоляции по умолчанию в PostgreSQL?", "options": ["Read Committed", "Repeatable Read", "Serializable", "Read Uncommitted"], "explain": "Read Uncommitted в PostgreSQL ведёт себя как Read Committed."},
+            {"q": "Неповторяемое чтение — это…", "options": ["Повторное чтение той же строки в транзакции даёт другое значение из-за чужого коммита", "Чтение незакоммиченных данных", "Появление новых строк при повторном запросе", "Ошибка при чтении"], "explain": "Новые строки — это фантомы."},
+            {"q": "Что гарантирует A в ACID?", "options": ["Атомарность: транзакция выполняется целиком или не выполняется вовсе", "Доступность", "Асинхронность", "Аутентификацию"], "explain": "C — согласованность, I — изоляция, D — долговечность."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pg",
+      "title": "PostgreSQL под капотом",
+      "kind": "repeat",
+      "description": "Её сильная сторона из резюме. Здесь важно уметь объяснить «почему», а не только «что сделала».",
+      "topics": [
+        {
+          "id": "pg-index",
+          "title": "Индексы и EXPLAIN ANALYZE",
+          "minutes": 50,
+          "recap": ["B-tree, Hash, GIN, GiST, BRIN — когда какой", "Составные индексы и порядок колонок", "Index Scan, Index Only Scan, Bitmap, Seq Scan", "Чтение плана: cost, rows, actual time, loops", "Статистика и ANALYZE"],
+          "materials": [
+            {"type": "книга", "title": "Use The Index, Luke", "url": "https://use-the-index-luke.com/"},
+            {"type": "док", "title": "Использование EXPLAIN", "url": "https://www.postgresql.org/docs/current/using-explain.html"},
+            {"type": "практика", "title": "Визуализатор планов explain.tensor.ru", "url": "https://explain.tensor.ru/"},
+            {"type": "видео", "title": "Курс Postgres Pro QPT: оптимизация запросов", "url": "https://postgrespro.ru/education/courses/QPT"}
+          ],
+          "quiz": [
+            {"q": "Почему индекс по created_at не используется в WHERE date(created_at) = '2026-01-01'?", "options": ["Функция над колонкой — нужен функциональный индекс или условие диапазоном", "Индексы не работают с датами", "Нужно сделать VACUUM", "Индекс используется, это не так"], "explain": "Лучше: created_at >= '2026-01-01' AND created_at < '2026-01-02'."},
+            {"q": "Есть составной индекс (a, b). Какое условие использует его эффективно?", "options": ["WHERE a = 1 AND b > 5", "WHERE b = 5", "WHERE b > 5 ORDER BY a", "Никакое"], "explain": "Работает правило левого префикса."},
+            {"q": "Чем EXPLAIN ANALYZE отличается от EXPLAIN?", "options": ["Реально выполняет запрос и показывает фактическое время и число строк", "Показывает только стоимость", "Ничем", "Оптимизирует запрос"], "explain": "Осторожно с UPDATE/DELETE — оборачивать в транзакцию с ROLLBACK."}
+          ]
+        },
+        {
+          "id": "pg-mvcc",
+          "title": "MVCC и VACUUM",
+          "new": true,
+          "minutes": 40,
+          "recap": ["Версии строк, xmin/xmax", "Мёртвые строки и bloat", "VACUUM, autovacuum, VACUUM FULL", "Долгие транзакции и wraparound"],
+          "materials": [
+            {"type": "док", "title": "MVCC (PostgreSQL)", "url": "https://www.postgresql.org/docs/current/mvcc.html"},
+            {"type": "док", "title": "Routine Vacuuming", "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html"},
+            {"type": "книга", "title": "«PostgreSQL изнутри», часть про MVCC", "url": "https://postgrespro.ru/education/books/internals"}
+          ],
+          "quiz": [
+            {"q": "Что происходит со старой версией строки после UPDATE?", "options": ["Остаётся в таблице мёртвой версией до VACUUM", "Сразу удаляется", "Переносится в WAL", "Перезаписывается на месте"], "explain": "UPDATE в PostgreSQL = INSERT новой версии + пометка старой."},
+            {"q": "Зачем autovacuum?", "options": ["Чистит мёртвые версии, обновляет статистику, защищает от wraparound", "Сжимает таблицы на диске", "Перестраивает все индексы", "Делает бэкапы"], "explain": "VACUUM FULL сжимает, но блокирует таблицу."},
+            {"q": "Чем вредна долго открытая транзакция?", "options": ["Мешает VACUUM удалять мёртвые строки — таблицы и индексы раздуваются", "Ничем", "Удаляет данные", "Снижает уровень изоляции"], "explain": "Частая причина деградации в проде: idle in transaction."}
+          ]
+        },
+        {
+          "id": "pg-part",
+          "title": "Партиционирование",
+          "minutes": 35,
+          "recap": ["RANGE, LIST, HASH", "Partition pruning", "DETACH/DROP вместо DELETE", "Автосоздание секций (pg_cron, pg_partman)", "Когда партиционирование вредит"],
+          "materials": [
+            {"type": "док", "title": "Секционирование таблиц", "url": "https://www.postgresql.org/docs/current/ddl-partitioning.html"}
+          ],
+          "quiz": [
+            {"q": "Что такое partition pruning?", "options": ["Планировщик отбрасывает секции, не подходящие под условие запроса", "Удаление старых секций", "Сжатие секций", "Перенос секций на другой диск"], "explain": "Работает, только если в WHERE есть ключ секционирования."},
+            {"q": "Какое секционирование выбрать для логов, где запросы идут за последние дни?", "options": ["RANGE по дате", "HASH по id", "LIST по типу события", "Не секционировать вовсе"], "explain": "Горячие данные в свежих секциях, старые легко удалять."},
+            {"q": "Как быстро удалить данные за старый месяц?", "options": ["DETACH и DROP секции", "DELETE WHERE date < …", "TRUNCATE всей таблицы", "VACUUM FULL"], "explain": "DROP секции — метаданные, а не построчное удаление и bloat."}
+          ]
+        },
+        {
+          "id": "pg-ha",
+          "title": "Репликация и шардирование",
+          "minutes": 40,
+          "recap": ["Физическая (streaming) и логическая репликация", "Синхронная и асинхронная", "Отставание реплики, read-your-writes", "Шардирование: ключ шарда, consistent hashing, кросс-шардовые запросы"],
+          "materials": [
+            {"type": "док", "title": "High Availability (PostgreSQL)", "url": "https://www.postgresql.org/docs/current/high-availability.html"},
+            {"type": "книга", "title": "Kleppmann «Designing Data-Intensive Applications»", "url": "https://dataintensive.net/"}
+          ],
+          "quiz": [
+            {"q": "Чем синхронная репликация отличается от асинхронной?", "options": ["Коммит ждёт подтверждения от реплики", "Реплика пишет данные сама", "Асинхронная надёжнее", "Ничем"], "explain": "Плата — задержка коммита и зависимость от доступности реплики."},
+            {"q": "Можно ли писать на hot standby реплику?", "options": ["Нет, только читать", "Да", "Да, но только DDL", "Только через pgbouncer"], "explain": "Для записи в несколько узлов — логическая репликация или другие решения."},
+            {"q": "Зачем consistent hashing при шардировании?", "options": ["При добавлении шарда переезжает малая часть ключей", "Шифрует ключи", "Ускоряет JOIN", "Убирает необходимость в репликации"], "explain": "При hash % N добавление шарда перемешивает почти все ключи."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "be",
+      "title": "Backend",
+      "kind": "repeat",
+      "description": "Её коммерческий опыт. Повторяем, чтобы уверенно рассказывать про SiriusTech.",
+      "topics": [
+        {
+          "id": "be-fastapi",
+          "title": "FastAPI и Pydantic",
+          "minutes": 35,
+          "recap": ["Роутеры, зависимости (Depends)", "def vs async def эндпоинты", "Pydantic v2: модели, валидаторы, сериализация", "OpenAPI, коды ответов, обработка ошибок"],
+          "materials": [
+            {"type": "док", "title": "FastAPI (на русском)", "url": "https://fastapi.tiangolo.com/ru/"},
+            {"type": "док", "title": "Pydantic", "url": "https://docs.pydantic.dev/latest/"}
+          ],
+          "quiz": [
+            {"q": "Что делает Depends() в FastAPI?", "options": ["Внедрение зависимостей: сессия БД, текущий пользователь и т.п.", "Объявляет зависимость в requirements", "Связывает таблицы", "Запускает фоновую задачу"], "explain": "Зависимости могут быть генераторами — так закрывают сессию БД."},
+            {"q": "Эндпоинт объявлен через def, а не async def. Где FastAPI его выполнит?", "options": ["В пуле потоков, не блокируя event loop", "В event loop, блокируя его", "В отдельном процессе", "Не выполнит, будет ошибка"], "explain": "А вот блокирующий вызов внутри async def заблокирует loop."},
+            {"q": "Что вернёт FastAPI, если тело запроса не прошло валидацию?", "options": ["422 Unprocessable Entity", "400 Bad Request", "500", "200 с пустым телом"], "explain": "С подробным списком ошибок валидации."}
+          ]
+        },
+        {
+          "id": "be-orm",
+          "title": "SQLAlchemy, Alembic и N+1",
+          "minutes": 40,
+          "recap": ["Session, unit of work, async-сессии", "Ленивая загрузка и N+1", "selectinload vs joinedload", "Alembic: autogenerate, ручная правка миграций, откат"],
+          "materials": [
+            {"type": "док", "title": "SQLAlchemy: загрузка связей", "url": "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html"},
+            {"type": "док", "title": "Alembic tutorial", "url": "https://alembic.sqlalchemy.org/en/latest/tutorial.html"}
+          ],
+          "quiz": [
+            {"q": "Что такое проблема N+1?", "options": ["Один запрос за списком и ещё по запросу на каждый элемент за связанными данными", "Запрос, возвращающий на одну строку больше", "Лишний индекс", "Ошибка нумерации миграций"], "explain": "Лечится жадной загрузкой: selectinload / joinedload."},
+            {"q": "Когда обычно берут selectinload, а когда joinedload?", "options": ["selectinload — для один-ко-многим, joinedload — для многие-к-одному", "Наоборот", "Всегда joinedload", "Всегда selectinload"], "explain": "joinedload по коллекциям размножает строки родителя."},
+            {"q": "Что делает alembic revision --autogenerate?", "options": ["Сравнивает модели со схемой БД и создаёт черновик миграции", "Применяет все миграции", "Откатывает последнюю миграцию", "Создаёт модели по БД"], "explain": "Черновик нужно проверять: переименования он видит как drop + add."}
+          ]
+        },
+        {
+          "id": "be-celery",
+          "title": "Celery и Redis",
+          "minutes": 35,
+          "recap": ["Брокер и бэкенд результатов", "Ретраи, acks_late, идемпотентность", "Периодические задачи (beat)", "Redis: кэш, TTL, cache-aside, инвалидация"],
+          "materials": [
+            {"type": "док", "title": "Celery", "url": "https://docs.celeryq.dev/en/stable/"},
+            {"type": "док", "title": "Redis", "url": "https://redis.io/docs/latest/"}
+          ],
+          "quiz": [
+            {"q": "Зачем Celery брокер (Redis/RabbitMQ)?", "options": ["Очередь сообщений между приложением и воркерами", "Хранит основную БД", "Балансирует HTTP-трафик", "Компилирует задачи"], "explain": "Приложение кладёт задачу, воркер забирает."},
+            {"q": "Почему задачи должны быть идемпотентными?", "options": ["Задача может выполниться повторно при ретрае или падении воркера", "Иначе Celery не запустится", "Так быстрее", "Это требование Redis"], "explain": "Например, отправку уведомления помечать в БД и проверять перед отправкой."},
+            {"q": "«Ищем в Redis, при промахе берём из БД и кладём в кэш» — это…", "options": ["cache-aside", "write-through", "write-behind", "read-through"], "explain": "Самый частый паттерн в бэкенде."}
+          ]
+        },
+        {
+          "id": "be-tests",
+          "title": "pytest",
+          "minutes": 30,
+          "recap": ["Фикстуры и их scope", "parametrize, моки", "Интеграционные тесты с реальной БД (транзакция + rollback, testcontainers)"],
+          "materials": [
+            {"type": "док", "title": "pytest", "url": "https://docs.pytest.org/en/stable/"}
+          ],
+          "quiz": [
+            {"q": "Что такое фикстура в pytest?", "options": ["Функция подготовки данных/окружения, которую тест получает по имени аргумента", "Тест без assert", "Конфиг pytest.ini", "Мок внешнего API"], "explain": "scope='session' — одна на весь прогон."},
+            {"q": "Чем интеграционный тест отличается от unit?", "options": ["Проверяет взаимодействие компонентов с реальными зависимостями, например БД", "Он быстрее", "Он без assert", "Ничем"], "explain": "Unit изолирует один модуль."},
+            {"q": "Что делает @pytest.mark.parametrize?", "options": ["Запускает тест на нескольких наборах аргументов", "Задаёт параметры БД", "Распараллеливает тесты", "Пропускает тест"], "explain": "Каждый набор — отдельный тест в отчёте."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inf",
+      "title": "Инфраструктура",
+      "kind": "mixed",
+      "description": "Docker, Linux, Git — повторение. Объектное хранилище и форматы файлов — мост к Data Engineering.",
+      "topics": [
+        {
+          "id": "inf-docker",
+          "title": "Docker и Compose",
+          "minutes": 35,
+          "recap": ["Образ, контейнер, слои и кэш", "Multi-stage сборка", "Volumes, сети", "docker compose: зависимости, healthcheck"],
+          "materials": [
+            {"type": "док", "title": "Docker: Get started", "url": "https://docs.docker.com/get-started/"},
+            {"type": "док", "title": "Docker Compose", "url": "https://docs.docker.com/compose/"}
+          ],
+          "quiz": [
+            {"q": "Чем образ отличается от контейнера?", "options": ["Образ — неизменяемый шаблон, контейнер — его запущенный экземпляр", "Ничем", "Контейнер хранится в registry", "Образ — это запущенный процесс"], "explain": "Из одного образа — много контейнеров."},
+            {"q": "Зачем COPY requirements.txt и pip install ставить до COPY . .?", "options": ["Чтобы слой с зависимостями кэшировался и не пересобирался при изменении кода", "Так требует Docker", "Чтобы уменьшить права", "Чтобы ускорить запуск контейнера"], "explain": "Изменение кода инвалидирует только последующие слои."},
+            {"q": "Как сохранить данные Postgres между перезапусками контейнера?", "options": ["Подключить volume к каталогу данных", "Ничего, сохраняются сами всегда", "Сделать docker commit", "Использовать --restart always"], "explain": "При удалении контейнера без volume данные пропадут."}
+          ]
+        },
+        {
+          "id": "inf-linux-git",
+          "title": "Linux и Git",
+          "minutes": 30,
+          "recap": ["Права, процессы, порты, логи", "grep, less, tail -f, ss/lsof", "merge vs rebase, cherry-pick, reflog"],
+          "materials": [
+            {"type": "книга", "title": "Pro Git (на русском)", "url": "https://git-scm.com/book/ru/v2"},
+            {"type": "практика", "title": "Learn Git Branching", "url": "https://learngitbranching.js.org/?locale=ru_RU"},
+            {"type": "практика", "title": "Linux Journey", "url": "https://linuxjourney.com/"}
+          ],
+          "quiz": [
+            {"q": "Чем git rebase отличается от git merge?", "options": ["rebase переносит коммиты поверх другой ветки (линейная история), merge создаёт merge-коммит", "Ничем", "merge переписывает историю", "rebase удаляет ветку"], "explain": "Не ребейзить опубликованные общие ветки."},
+            {"q": "Как узнать, какой процесс слушает порт 5432?", "options": ["ss -ltnp | grep 5432", "ps 5432", "chmod 5432", "kill -l 5432"], "explain": "Также lsof -i :5432."},
+            {"q": "Что делает chmod 600 file?", "options": ["Чтение и запись только владельцу", "Полный доступ всем", "Только исполнение", "Только чтение всем"], "explain": "6 = rw-, 0 = ---."}
+          ]
+        },
+        {
+          "id": "inf-s3",
+          "title": "Объектное хранилище и форматы файлов",
+          "new": true,
+          "minutes": 40,
+          "recap": ["S3/MinIO: бакеты, ключи, presigned URL", "CSV vs JSON vs Parquet vs Avro", "Колоночные форматы и сжатие", "Партиционирование в озере: date=2026-11-10/"],
+          "materials": [
+            {"type": "док", "title": "Apache Parquet", "url": "https://parquet.apache.org/docs/"},
+            {"type": "док", "title": "PyArrow: чтение и запись Parquet", "url": "https://arrow.apache.org/docs/python/parquet.html"},
+            {"type": "док", "title": "MinIO", "url": "https://min.io/docs/minio/linux/index.html"}
+          ],
+          "quiz": [
+            {"q": "Почему Parquet удобнее CSV для аналитики?", "options": ["Колоночный, сжатый, со схемой — читаются только нужные колонки", "Его можно открыть в Excel", "Он текстовый", "Он быстрее на запись по одной строке"], "explain": "CSV без типов и читается целиком."},
+            {"q": "Что такое presigned URL?", "options": ["Временная ссылка на загрузку/скачивание объекта без передачи ключей", "Постоянная публичная ссылка", "Ссылка на бакет", "Подписанный коммит"], "explain": "Так она отдавала файлы из MinIO в Dating Bot."},
+            {"q": "Зачем раскладывать файлы как s3://bucket/date=2026-11-10/?", "options": ["Чтобы движки читали только нужные партиции", "Так требует S3", "Для шифрования", "Чтобы файлы не перезаписывались"], "explain": "Hive-style partitioning понимают Spark, ClickHouse, DuckDB."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de",
+      "title": "Data Engineering",
+      "kind": "new",
+      "description": "Цель роста из резюме: ETL, хранилища, ClickHouse. Основной новый материал курса.",
+      "topics": [
+        {
+          "id": "de-etl",
+          "title": "ETL, ELT и пайплайны",
+          "new": true,
+          "minutes": 45,
+          "recap": ["ETL vs ELT", "Батч и стриминг", "Инкрементальная загрузка, watermark", "Идемпотентность и перезапуски", "OLTP vs OLAP"],
+          "materials": [
+            {"type": "книга", "title": "Reis, Housley «Fundamentals of Data Engineering»", "url": "https://www.oreilly.com/library/view/fundamentals-of-data/9781098108298/"},
+            {"type": "видео", "title": "Подборка видео: ETL и ELT", "url": "https://www.youtube.com/results?search_query=etl+elt+data+engineering+объяснение"}
+          ],
+          "quiz": [
+            {"q": "Чем ELT отличается от ETL?", "options": ["Сырые данные сначала грузятся в хранилище и трансформируются внутри него", "Ничем", "ELT не трансформирует данные", "ELT работает только со стримами"], "explain": "Стало возможным благодаря дешёвым мощным хранилищам."},
+            {"q": "Идемпотентный пайплайн — это…", "options": ["Повторный запуск за тот же период даёт тот же результат без дублей", "Пайплайн без ошибок", "Пайплайн, запускаемый раз в день", "Пайплайн без зависимостей"], "explain": "Ключевое свойство для ретраев и backfill."},
+            {"q": "Как не получить дубли при повторной загрузке дня?", "options": ["Перезаписывать партицию дня или делать upsert по ключу", "Запускать реже", "Добавлять DISTINCT в отчётах", "Отключить ретраи"], "explain": "В PostgreSQL — INSERT … ON CONFLICT DO UPDATE."}
+          ]
+        },
+        {
+          "id": "de-model",
+          "title": "Моделирование хранилищ",
+          "new": true,
+          "minutes": 50,
+          "recap": ["Факты и измерения, схема «звезда» и «снежинка»", "Гранулярность факта", "SCD Type 1 и Type 2", "Денормализация в аналитике"],
+          "materials": [
+            {"type": "статья", "title": "Kimball: Dimensional Modeling Techniques", "url": "https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/"},
+            {"type": "видео", "title": "Подборка видео: схема звезда, SCD", "url": "https://www.youtube.com/results?search_query=схема+звезда+scd+хранилище+данных"}
+          ],
+          "quiz": [
+            {"q": "Что лежит в таблице фактов?", "options": ["События с числовыми метриками и ключами на измерения", "Справочники", "Логи ошибок", "Только агрегаты по месяцам"], "explain": "Измерения описывают «кто/что/где/когда»."},
+            {"q": "SCD Type 2 — это…", "options": ["Новая строка с периодом действия на каждое изменение атрибута, история сохраняется", "Перезапись значения", "Удаление старых строк", "Отдельная таблица логов"], "explain": "Type 1 просто перезаписывает."},
+            {"q": "Почему в хранилище допускают денормализацию?", "options": ["Меньше JOIN — быстрее аналитические запросы", "Так экономится место", "Нормализация там запрещена", "Чтобы не нужны были индексы"], "explain": "Обновления редки, чтения тяжёлые."}
+          ]
+        },
+        {
+          "id": "de-clickhouse",
+          "title": "ClickHouse и колоночные СУБД",
+          "new": true,
+          "minutes": 50,
+          "recap": ["Колоночное хранение и сжатие", "MergeTree, ORDER BY и первичный ключ, PARTITION BY", "Пакетная вставка", "Materialized views, ReplacingMergeTree"],
+          "materials": [
+            {"type": "док", "title": "ClickHouse (на русском)", "url": "https://clickhouse.com/docs/ru"},
+            {"type": "видео", "title": "Подборка видео: ClickHouse для начинающих", "url": "https://www.youtube.com/results?search_query=clickhouse+для+начинающих"}
+          ],
+          "quiz": [
+            {"q": "Почему колоночные СУБД быстры на аналитике?", "options": ["Читают только нужные колонки и хорошо их сжимают", "Хранят всё в RAM", "Не поддерживают JOIN", "Используют только B-tree"], "explain": "Зато точечные UPDATE и вставки по строке — слабое место."},
+            {"q": "Основное семейство движков таблиц в ClickHouse?", "options": ["MergeTree", "InnoDB", "Heap", "LSM"], "explain": "ReplacingMergeTree, AggregatingMergeTree — его варианты."},
+            {"q": "Чего избегать в ClickHouse?", "options": ["Частых вставок по одной строке и UPDATE отдельных строк", "Пакетных вставок", "GROUP BY", "Партиционирования по месяцу"], "explain": "Вставлять пачками от тысяч строк."}
+          ]
+        },
+        {
+          "id": "de-airflow",
+          "title": "Оркестрация: Airflow",
+          "new": true,
+          "minutes": 45,
+          "recap": ["DAG, задачи, операторы, зависимости", "Расписание, data interval, catchup, backfill", "XCom и почему не гонять через него данные", "Ретраи, SLA, алерты"],
+          "materials": [
+            {"type": "док", "title": "Apache Airflow", "url": "https://airflow.apache.org/docs/apache-airflow/stable/index.html"},
+            {"type": "видео", "title": "Подборка видео: Airflow с нуля", "url": "https://www.youtube.com/results?search_query=apache+airflow+с+нуля"}
+          ],
+          "quiz": [
+            {"q": "Что такое DAG в Airflow?", "options": ["Граф задач без циклов, описывающий пайплайн и зависимости", "База данных Airflow", "Тип оператора", "Расписание в cron"], "explain": "Directed Acyclic Graph."},
+            {"q": "Что такое backfill?", "options": ["Прогон DAG за прошлые интервалы", "Удаление старых запусков", "Заполнение NULL", "Резервная копия метаданных"], "explain": "Работает корректно только для идемпотентных задач."},
+            {"q": "Почему тяжёлый код не пишут на верхнем уровне файла DAG?", "options": ["Планировщик постоянно перепарсивает файлы — это тормозит его", "Airflow запретит такой файл", "Код не выполнится", "Это нарушает PEP 8"], "explain": "Тяжёлое — внутри задач."}
+          ]
+        },
+        {
+          "id": "de-kafka",
+          "title": "Стриминг: Kafka",
+          "new": true,
+          "minutes": 40,
+          "recap": ["Топики, партиции, offset", "Producer, consumer group", "Гарантии доставки: at-most-once, at-least-once, exactly-once", "Порядок сообщений"],
+          "materials": [
+            {"type": "док", "title": "Apache Kafka", "url": "https://kafka.apache.org/documentation/"},
+            {"type": "видео", "title": "Курсы Confluent Developer", "url": "https://developer.confluent.io/courses/"}
+          ],
+          "quiz": [
+            {"q": "Что такое партиция топика?", "options": ["Упорядоченный лог сообщений и единица параллелизма", "Отдельный брокер", "Копия топика", "Группа консьюмеров"], "explain": "Число партиций ограничивает число параллельных консьюмеров в группе."},
+            {"q": "Consumer group — это…", "options": ["Консьюмеры, делящие партиции: каждое сообщение обрабатывает один из группы", "Все консьюмеры кластера", "Группа топиков", "Реплики брокера"], "explain": "Разные группы читают топик независимо."},
+            {"q": "Гарантирует ли Kafka порядок по всему топику?", "options": ["Только внутри партиции", "Да, всегда", "Нет, никогда", "Только с одним продюсером"], "explain": "Нужен порядок по ключу — пишите с ключом."}
+          ]
+        },
+        {
+          "id": "de-dbt",
+          "title": "dbt и качество данных",
+          "new": true,
+          "minutes": 40,
+          "recap": ["Модели, ref(), материализации", "Инкрементальные модели", "Тесты: unique, not_null, relationships, свежесть", "Документация и lineage"],
+          "materials": [
+            {"type": "док", "title": "dbt Docs", "url": "https://docs.getdbt.com/"},
+            {"type": "док", "title": "Инкрементальные модели", "url": "https://docs.getdbt.com/docs/build/incremental-models"}
+          ],
+          "quiz": [
+            {"q": "Что такое модель в dbt?", "options": ["SELECT в .sql-файле, который dbt материализует как таблицу или представление", "Python-класс", "Схема БД", "Тест данных"], "explain": "ref() строит граф зависимостей моделей."},
+            {"q": "Какие проверки качества данных базовые?", "options": ["Уникальность, not null, ссылочная целостность, свежесть", "Только количество строк", "Только типы колонок", "Проверки не нужны в хранилище"], "explain": "Плюс бизнес-проверки: суммы не отрицательные и т.п."},
+            {"q": "Что такое инкрементальная модель?", "options": ["Обрабатывает только новые данные, не пересчитывая всё", "Модель, которая растёт", "Модель с индексом", "Временная таблица"], "explain": "Нужен признак новизны: updated_at или id."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "int",
+      "title": "Подготовка к собеседованию",
+      "kind": "mixed",
+      "description": "Алгоритмы, system design для данных и рассказ о своих проектах.",
+      "topics": [
+        {
+          "id": "int-algo",
+          "title": "Алгоритмы и структуры данных",
+          "minutes": 45,
+          "recap": ["Big O", "list, dict, set, deque, heapq — сложность операций", "Два указателя, скользящее окно, хеш-таблицы", "Сортировки и бинарный поиск"],
+          "materials": [
+            {"type": "практика", "title": "LeetCode 75", "url": "https://leetcode.com/studyplan/leetcode-75/"},
+            {"type": "практика", "title": "NeetCode Roadmap", "url": "https://neetcode.io/roadmap"}
+          ],
+          "quiz": [
+            {"q": "Средняя сложность поиска ключа в dict?", "options": ["O(1)", "O(n)", "O(log n)", "O(n log n)"], "explain": "Хеш-таблица."},
+            {"q": "Сложность x in list?", "options": ["O(n)", "O(1)", "O(log n)", "O(n²)"], "explain": "Для частых проверок — set."},
+            {"q": "Как найти дубли в списке из 1 млн элементов быстрее O(n²)?", "options": ["Пройти один раз с set или Counter — O(n)", "Двойной цикл", "Сортировать пузырьком", "Никак"], "explain": "Сортировка + проход тоже работает, O(n log n)."}
+          ]
+        },
+        {
+          "id": "int-design",
+          "title": "System design для данных",
+          "new": true,
+          "minutes": 50,
+          "recap": ["OLTP-источник → загрузка → хранилище → витрины", "Выбор хранилища под нагрузку", "Отставание реплик, консистентность", "Надёжная обработка событий"],
+          "materials": [
+            {"type": "книга", "title": "Kleppmann «Designing Data-Intensive Applications»", "url": "https://dataintensive.net/"},
+            {"type": "статья", "title": "System Design Primer", "url": "https://github.com/donnemartin/system-design-primer"}
+          ],
+          "quiz": [
+            {"q": "1 млрд событий кликов, отчёты по дням. Что выбрать?", "options": ["Колоночную СУБД (например, ClickHouse) с партиционированием по дате", "PostgreSQL без индексов", "Redis", "Файлы CSV на сервере"], "explain": "Аналитика по большим объёмам — колоночные хранилища."},
+            {"q": "Пользователь не видит свою только что сохранённую запись: чтение идёт с отстающей реплики. Что сделать?", "options": ["Читать свои свежие записи с primary (read-your-writes)", "Отключить реплики", "Увеличить кэш", "Перезапустить БД"], "explain": "Или привязывать сессию к primary на время после записи."},
+            {"q": "Как не потерять события при падении консьюмера?", "options": ["Коммитить offset после обработки и писать идемпотентно", "Коммитить offset до обработки", "Читать с начала топика каждый раз", "Увеличить число партиций"], "explain": "Это at-least-once; идемпотентность убирает дубли."}
+          ]
+        },
+        {
+          "id": "int-story",
+          "title": "Рассказ о себе и проектах",
+          "minutes": 40,
+          "recap": [
+            "STAR: ситуация, задача, действия, результат — с цифрами",
+            "SiriusTech: N+1 в журнале оценок, EXPLAIN ANALYZE, составные индексы — что было и что стало",
+            "Events Booking: индексы на 1 млн строк, партиционирование через pg_cron, primary + replica, consistent hashing",
+            "Dating Bot: aiogram 3, asyncpg, Redis-кэш, Celery, MinIO",
+            "Хакатоны: Всероссийский IT-раунд, Sber Workshop, Цифровой прорыв",
+            "Ответ на «почему Data Engineering» и «что изучаешь сейчас» (ClickHouse, ETL)"
+          ],
+          "materials": [
+            {"type": "практика", "title": "Её репозиторий Events Booking", "url": "https://github.com/VasilevaNika/Events_Booking"},
+            {"type": "практика", "title": "Её репозиторий Dating Bot", "url": "https://github.com/VasilevaNika/Dating_Bot"},
+            {"type": "видео", "title": "Подборка видео: метод STAR", "url": "https://www.youtube.com/results?search_query=метод+star+собеседование"}
+          ],
+          "quiz": [
+            {"q": "STAR — это…", "options": ["Situation, Task, Action, Result", "Skills, Talent, Ambition, Results", "Start, Test, Analyze, Repeat", "Story, Team, Achievement, Role"], "explain": "Структура ответа на поведенческие вопросы."},
+            {"q": "Как сильнее рассказать про оптимизацию журнала?", "options": ["Было/стало в цифрах, как измерила (EXPLAIN ANALYZE), что поменяла и почему", "«Ускорила загрузку»", "Перечислить технологии", "Сказать, что это сделала команда"], "explain": "Интервьюер ищет метод мышления, а не список слов."},
+            {"q": "Лучший ответ на «почему Data Engineering?» опирается на…", "options": ["Реальный опыт с данными и производительностью плюс конкретный план роста", "Высокие зарплаты", "Модность профессии", "Совет знакомых"], "explain": "У неё это есть: оптимизация запросов, партиционирование, интерес к ClickHouse."}
+          ]
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    {"block": "py", "q": "Процессы, потоки и корутины в Python: чем отличаются и где мешает GIL?", "key": ["Процессы — отдельная память, обходят GIL, подходят для CPU-bound", "Потоки — общая память, GIL не даёт параллельно исполнять байткод, но отпускается на I/O", "Корутины — кооперативная многозадачность в одном потоке, для I/O-bound", "Пример выбора под задачу"]},
+    {"block": "py", "q": "В чём ловушка изменяемого аргумента по умолчанию def f(x=[])?", "key": ["Значение по умолчанию создаётся один раз при определении функции", "Список общий для всех вызовов и накапливает данные", "Решение: x=None и создание списка внутри"]},
+    {"block": "py", "q": "Как устроен декоратор с аргументами? Опиши структуру.", "key": ["Три уровня вложенности: фабрика(аргументы) → декоратор(func) → обёртка(*args, **kwargs)", "functools.wraps на обёртке", "Пример: @retry(times=3)"]},
+    {"block": "sql", "q": "Как найти вторую по величине зарплату в каждом отделе?", "key": ["DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary DESC)", "Обернуть в CTE/подзапрос и отфильтровать rank = 2", "Почему DENSE_RANK, а не ROW_NUMBER — одинаковые зарплаты"]},
+    {"block": "sql", "q": "Чем отличаются DELETE, TRUNCATE и DROP?", "key": ["DELETE — построчно, с WHERE, триггеры, мёртвые строки до VACUUM", "TRUNCATE — быстро очищает таблицу целиком, структура остаётся", "DROP — удаляет таблицу вместе со структурой", "Все три транзакционны в PostgreSQL"]},
+    {"block": "sql", "q": "Расскажи об уровнях изоляции и аномалиях, которые они допускают.", "key": ["Read Committed — неповторяемое чтение и фантомы возможны", "Repeatable Read в PostgreSQL — снимок на транзакцию, возможна ошибка сериализации", "Serializable — как будто последовательно, нужен ретрай транзакций", "Потерянное обновление и SELECT FOR UPDATE"]},
+    {"block": "pg", "q": "Запрос тормозит в проде. Твои шаги?", "key": ["Воспроизвести, снять EXPLAIN (ANALYZE, BUFFERS)", "Найти дорогой узел: Seq Scan по большой таблице, ошибка оценки rows, Nested Loop на тысячах строк", "Проверить статистику (ANALYZE) и индексы под фильтры/сортировку", "Проверить N+1 на стороне приложения, pg_stat_statements", "Измерить результат после изменения"]},
+    {"block": "pg", "q": "Как ты подбирала индексы в Events Booking на 1 млн записей?", "key": ["Сгенерировала данные bulk_insert_mappings", "Сняла планы до/после через EXPLAIN ANALYZE", "Составные индексы под частые фильтры и порядок колонок", "Цифры: время до и после"]},
+    {"block": "pg", "q": "Когда партиционирование вредит?", "key": ["Запросы без ключа секционирования читают все секции", "Слишком много мелких секций — накладные расходы планировщика", "Уникальные ограничения должны включать ключ секционирования", "На маленьких таблицах выигрыша нет"]},
+    {"block": "be", "q": "Как гарантировать, что Celery-задача не отправит уведомление дважды?", "key": ["Задачи доставляются как минимум один раз — повтор возможен", "Ключ идемпотентности и отметка в БД до/после отправки", "Уникальное ограничение или SELECT FOR UPDATE", "acks_late и ретраи осознанно"]},
+    {"block": "be", "q": "Что происходит, когда приходит запрос в FastAPI-эндпоинт с сессией БД?", "key": ["ASGI-сервер (uvicorn) принимает запрос", "Роутинг, разрешение зависимостей Depends, валидация Pydantic", "Сессия выдаётся зависимостью-генератором и закрывается после ответа", "Сериализация ответа через response_model"]},
+    {"block": "be", "q": "Как организовать тесты с реальной базой?", "key": ["Отдельная тестовая БД или testcontainers", "Миграции в начале сессии", "Каждый тест в транзакции с откатом", "Фикстуры для данных"]},
+    {"block": "de", "q": "Спроектируй ежедневную выгрузку заказов из PostgreSQL в ClickHouse.", "key": ["Инкрементально по updated_at с запасом (watermark)", "Выгрузка батчами, запись в ClickHouse пачками", "Идемпотентность: перезапись партиции дня или ReplacingMergeTree", "Оркестрация в Airflow с ретраями и backfill", "Проверки: число строк, суммы, свежесть"]},
+    {"block": "de", "q": "Чем OLTP отличается от OLAP?", "key": ["OLTP — много коротких транзакций, точечные чтения/записи, нормализация", "OLAP — тяжёлые агрегирующие запросы по большим объёмам", "Разные хранилища: строковые vs колоночные", "Данные из OLTP переносят в OLAP через пайплайны"]},
+    {"block": "de", "q": "Что такое SCD Type 2 и как его реализовать?", "key": ["Хранение истории изменений измерения", "Колонки valid_from, valid_to, is_current", "При изменении — закрыть старую строку и вставить новую", "Факты ссылаются на суррогатный ключ версии"]},
+    {"block": "de", "q": "Как следить за качеством данных в пайплайне?", "key": ["Тесты: not null, unique, связи, допустимые значения", "Свежесть и объём по сравнению с прошлыми запусками", "Остановка пайплайна или алерт при провале", "dbt tests / Great Expectations / свои SQL-проверки"]}
+  ],
+  "exams": [
+    {"id": "boss-backend", "title": "Босс: Python Backend", "blocks": ["py", "be", "inf"], "open_blocks": ["py", "be"], "mcq": 12, "open": 3, "pass": 0.8},
+    {"id": "boss-sql", "title": "Босс: SQL и PostgreSQL", "blocks": ["sql", "pg"], "open_blocks": ["sql", "pg"], "mcq": 12, "open": 3, "pass": 0.8},
+    {"id": "boss-de", "title": "Босс: Data Engineer", "blocks": ["sql", "pg", "de", "inf"], "open_blocks": ["de", "pg"], "mcq": 12, "open": 3, "pass": 0.8},
+    {"id": "final", "title": "Финальный босс: полный техсобес", "blocks": ["py", "sql", "pg", "be", "inf", "de", "int"], "open_blocks": ["py", "sql", "pg", "be", "de"], "mcq": 20, "open": 4, "pass": 0.8, "requires": ["boss-backend", "boss-sql", "boss-de"]}
+  ],
+  "achievements": [
+    {"id": "first-topic", "title": "Первая кровь", "condition": "Пройти первую тему", "reward": "Шоколадка"},
+    {"id": "combo-5", "title": "Комбо ×5", "condition": "Пройти 5 тем за один день", "reward": "Шоколадка покрупнее"},
+    {"id": "combo-10", "title": "Мегакомбо", "condition": "Пройти 10 тем за один день", "reward": "Пицца на ужин"},
+    {"id": "block-clear", "title": "Локация зачищена", "condition": "Пройти все темы любого блока", "reward": "Кофе и десерт"},
+    {"id": "flawless", "title": "Без урона", "condition": "Мини-тест без единой ошибки", "reward": ""},
+    {"id": "sniper", "title": "Снайпер", "condition": "10 мини-тестов без ошибок", "reward": "Шоколадка"},
+    {"id": "streak-3", "title": "Серия ×3", "condition": "Заниматься 3 дня подряд", "reward": ""},
+    {"id": "streak-7", "title": "Неделя без пропусков", "condition": "Заниматься 7 дней подряд", "reward": "Кино на выбор"},
+    {"id": "night-raid", "title": "Ночной рейд", "condition": "Пройти тему после 23:00", "reward": ""},
+    {"id": "morning-farm", "title": "Утренний фарм", "condition": "Пройти тему до 9:00", "reward": ""},
+    {"id": "explorer", "title": "Исследователь", "condition": "Открыть 15 материалов", "reward": ""},
+    {"id": "notes-5", "title": "Конспектист", "condition": "Написать заметки в 5 темах", "reward": ""},
+    {"id": "new-lands", "title": "Новые земли", "condition": "Пройти первую тему блока Data Engineering", "reward": ""},
+    {"id": "review-5", "title": "Память как сталь", "condition": "Успешно повторить 5 тем спустя 3+ дня", "reward": ""},
+    {"id": "first-boss", "title": "Первый босс", "condition": "Сдать любой симулятор собеседования", "reward": "Ужин в ресторане"},
+    {"id": "speedrun", "title": "Спидран", "condition": "Сдать симулятор быстрее чем за 8 минут", "reward": "Любимые роллы"},
+    {"id": "talker", "title": "Разговорчивая", "condition": "5 открытых вопросов с оценкой «знала»", "reward": ""},
+    {"id": "all-bosses", "title": "Все боссы повержены", "condition": "Сдать финального босса", "reward": "Подарок на выбор"},
+    {"id": "de-block", "title": "Дата-инженер", "condition": "Пройти весь блок Data Engineering", "reward": "Выходной без быта"},
+    {"id": "completionist", "title": "100%", "condition": "Пройти все темы курса", "reward": "Главный приз"}
+  ]
+}
