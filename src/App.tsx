@@ -6,6 +6,8 @@ import TopicPage from './pages/TopicPage';
 import SettingsPage from './pages/SettingsPage';
 import AchievementsPage from './pages/AchievementsPage';
 import CouponPage from './pages/CouponPage';
+import ExamListPage from './pages/ExamListPage';
+import ExamRunPage from './pages/ExamRunPage';
 import Toasts from './components/Toasts';
 
 function ScrollToTop() {
@@ -29,6 +31,7 @@ export default function App() {
             <NavLink to="/" end>
               Карта
             </NavLink>
+            <NavLink to="/exam">Боссы</NavLink>
             <NavLink to="/achievements">Ачивки</NavLink>
             <NavLink to="/settings">Настройки</NavLink>
           </nav>
@@ -39,6 +42,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<MapPage />} />
           <Route path="/topic/:id" element={<TopicPage />} />
+          <Route path="/exam" element={<ExamListPage />} />
+          <Route path="/exam/:id" element={<ExamRunPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/coupon/:id" element={<CouponPage />} />
           <Route path="/settings" element={<SettingsPage />} />
