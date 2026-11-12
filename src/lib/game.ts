@@ -140,7 +140,9 @@ export function evaluate(p: Progress, content: Content): string[] {
     completionist: () => allTopics.length > 0 && allTopics.every((t) => done(t.id)),
   };
 
-  return content.achievements.filter((a) => rules[a.id]?.() ?? false).map((a) => a.id);
+  // Ачивки с полем block — одно общее правило: пройдены все темы этого блока.
+  const met = (a: Content['achievements'][number]) => (a.block ? blockDone(a.block) : (rules[a.id]?.() ?? false));
+  return content.achievements.filter(met).map((a) => a.id);
 }
 
 /**

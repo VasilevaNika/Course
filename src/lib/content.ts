@@ -45,6 +45,8 @@ export type Achievement = {
   title: string;
   condition: string;
   reward: string;
+  /** Ачивка за блок: открывается, когда пройдены все темы этого блока. */
+  block?: string;
 };
 
 export type Content = {
