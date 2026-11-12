@@ -1,10 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import type { Progress } from './lib/progress';
+import { todayCount, type Progress } from './lib/progress';
+import { confetti } from './lib/confetti';
 import { loadProgress, saveProgress } from './lib/storage';
 import { applyAchievements } from './lib/game';
 import { content } from './lib/content';
 
-export type Toast = { id: number; achievementId: string };
+export type Toast = { id: number; kind: 'achievement'; achievementId: string } | { id: number; kind: 'goal'; goal: number };
 
 type Ctx = {
   progress: Progress;
@@ -25,6 +26,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<Progress>(() => applyAchievements(loadProgress(), content).progress);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const silent = useRef(false);
+  // Сколько тем было сегодня на прошлом шаге — чтобы поймать момент выполнения дневной цели.
+  const prevToday = useRef<number | null>(null);
 
   // После каждого действия: проверить ачивки, записать новые и показать тост.
   useEffect(() => {
@@ -32,9 +35,16 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     if (next !== progress) {
       setProgress(next);
       if (unlocked.length && !silent.current) {
-        setToasts((t) => [...t, ...unlocked.map((achievementId) => ({ id: ++toastSeq, achievementId }))]);
+        setToasts((t) => [...t, ...unlocked.map((achievementId) => ({ id: ++toastSeq, kind: 'achievement' as const, achievementId }))]);
       }
       return; // сохраним на следующем проходе, уже с ачивками
+    }
+    const today = todayCount(progress);
+    const before = prevToday.current;
+    prevToday.current = today;
+    if (!silent.current && before !== null && before < progress.dailyGoal && today >= progress.dailyGoal) {
+      setToasts((t) => [...t, { id: ++toastSeq, kind: 'goal', goal: progress.dailyGoal }]);
+      confetti(1);
     }
     silent.current = false;
     saveProgress(progress);
