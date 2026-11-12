@@ -121,7 +121,6 @@ export function evaluate(p: Progress, content: Content): string[] {
     'first-topic': () => count(p.topics) >= 1,
     'combo-5': () => maxDay >= 5,
     'combo-10': () => maxDay >= 10,
-    'block-clear': () => content.blocks.some((b) => blockDone(b.id)),
     flawless: () => p.perfectQuizzes >= 1,
     sniper: () => p.perfectQuizzes >= 10,
     'streak-3': () => streak >= 3,
@@ -136,7 +135,6 @@ export function evaluate(p: Progress, content: Content): string[] {
     speedrun: () => Boolean(p.flags.speedrun),
     talker: () => p.openGood >= 5,
     'all-bosses': () => Boolean(p.exams[FINAL_EXAM_ID]?.passedAt),
-    'de-block': () => blockDone('de'),
     completionist: () => allTopics.length > 0 && allTopics.every((t) => done(t.id)),
   };
 
