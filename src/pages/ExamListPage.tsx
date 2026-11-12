@@ -3,12 +3,14 @@ import { useProgress } from '../ProgressContext';
 import { content } from '../lib/content';
 import { formatTime, missingRequirements } from '../lib/exam';
 import { FINAL_EXAM_ID, XP } from '../lib/game';
+import { loadRun } from '../lib/examRun';
 
 const blockTitle = (id: string) => content.blocks.find((b) => b.id === id)?.title ?? id;
 const examTitle = (id: string) => content.exams.find((e) => e.id === id)?.title ?? id;
 
 export default function ExamListPage() {
   const { progress } = useProgress();
+  const run = loadRun();
 
   return (
     <>
@@ -44,8 +46,11 @@ export default function ExamListPage() {
               {locked ? (
                 <p className="small muted">Сначала победи: {missing.map(examTitle).join(', ')}.</p>
               ) : (
-                <Link to={`/exam/${exam.id}`} className={`btn ${st?.passedAt ? '' : 'btn--primary'} boss__go`}>
-                  {st ? 'Сразиться ещё раз' : 'В бой'}
+                <Link
+                  to={`/exam/${exam.id}`}
+                  className={`btn ${st?.passedAt && run?.examId !== exam.id ? '' : 'btn--primary'} boss__go`}
+                >
+                  {run?.examId === exam.id ? 'Продолжить бой' : st ? 'Сразиться ещё раз' : 'В бой'}
                 </Link>
               )}
             </li>

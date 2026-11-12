@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { content } from './content';
-import { buildExam, formatTime, missingRequirements, recordExam, recordOpenAnswers, SPEEDRUN_SEC } from './exam';
+import { buildExam, formatTime, missingRequirements, recordExam, recordExamFinish, recordOpenAnswers, SPEEDRUN_SEC } from './exam';
 import { computeXp, evaluate } from './game';
 import { emptyProgress } from './progress';
 
@@ -47,43 +47,59 @@ describe('recordExam', () => {
   const boss = exam('boss-backend'); // 12 вопросов, порог 0.8
 
   it('порог 80%: 9/12 не сдано, 10/12 сдано', () => {
-    expect(recordExam(emptyProgress(), boss, 9, 600, T0).outcome.passed).toBe(false);
-    expect(recordExam(emptyProgress(), boss, 10, 600, T0).outcome.passed).toBe(true);
+    expect(recordExam(emptyProgress(), boss, 9, T0).outcome.passed).toBe(false);
+    expect(recordExam(emptyProgress(), boss, 10, T0).outcome.passed).toBe(true);
   });
 
   it('ровно 80% засчитывается', () => {
     const final = exam('final'); // 20 вопросов
-    expect(recordExam(emptyProgress(), final, 16, 600, T0).outcome.passed).toBe(true);
-    expect(recordExam(emptyProgress(), final, 15, 600, T0).outcome.passed).toBe(false);
+    expect(recordExam(emptyProgress(), final, 16, T0).outcome.passed).toBe(true);
+    expect(recordExam(emptyProgress(), final, 15, T0).outcome.passed).toBe(false);
   });
 
   it('копит попытки, лучший результат и первое прохождение', () => {
-    let p = recordExam(emptyProgress(), boss, 5, 700, T0).progress;
+    let p = recordExam(emptyProgress(), boss, 5, T0).progress;
     expect(p.exams[boss.id]).toEqual({ attempts: 1, best: 5 / 12 });
-    const r2 = recordExam(p, boss, 11, 650, T0 + 1);
+    const r2 = recordExam(p, boss, 11, T0 + 1);
     expect(r2.outcome.firstPass).toBe(true);
     p = r2.progress;
-    expect(p.exams[boss.id]).toEqual({ attempts: 2, best: 11 / 12, passedAt: T0 + 1, bestTimeSec: 650 });
-    const r3 = recordExam(p, boss, 10, 900, T0 + 2);
+    expect(p.exams[boss.id]).toEqual({ attempts: 2, best: 11 / 12, passedAt: T0 + 1 });
+    const r3 = recordExam(p, boss, 10, T0 + 2);
     expect(r3.outcome.firstPass).toBe(false);
-    expect(r3.progress.exams[boss.id]).toEqual({ attempts: 3, best: 11 / 12, passedAt: T0 + 1, bestTimeSec: 650 });
-    const r4 = recordExam(r3.progress, boss, 3, 100, T0 + 3);
-    expect(r4.progress.exams[boss.id]).toMatchObject({ passedAt: T0 + 1, bestTimeSec: 650 });
+    expect(r3.progress.exams[boss.id]).toEqual({ attempts: 3, best: 11 / 12, passedAt: T0 + 1 });
+    const r4 = recordExam(r3.progress, boss, 3, T0 + 3);
+    expect(r4.progress.exams[boss.id]).toMatchObject({ attempts: 4, passedAt: T0 + 1 });
   });
 
-  it('спидран только при сдаче быстрее 8 минут', () => {
-    expect(recordExam(emptyProgress(), boss, 12, SPEEDRUN_SEC, T0).progress.flags.speedrun).toBeUndefined();
-    expect(recordExam(emptyProgress(), boss, 12, SPEEDRUN_SEC - 1, T0).progress.flags.speedrun).toBe(true);
-    expect(recordExam(emptyProgress(), boss, 2, 60, T0).progress.flags.speedrun).toBeUndefined();
+  it('лучшее время — по всему бою и только для сданных попыток', () => {
+    let p = recordExam(emptyProgress(), boss, 12, T0).progress;
+    p = recordExamFinish(p, boss, true, 700, T0).progress;
+    expect(p.exams[boss.id].bestTimeSec).toBe(700);
+    p = recordExamFinish(recordExam(p, boss, 12, T0).progress, boss, true, 900, T0).progress;
+    expect(p.exams[boss.id].bestTimeSec).toBe(700);
+    p = recordExamFinish(recordExam(p, boss, 2, T0).progress, boss, false, 100, T0).progress;
+    expect(p.exams[boss.id].bestTimeSec).toBe(700);
+    p = recordExamFinish(recordExam(p, boss, 12, T0).progress, boss, true, 650, T0).progress;
+    expect(p.exams[boss.id]).toMatchObject({ attempts: 4, bestTimeSec: 650 });
+  });
+
+  it('спидран — весь бой быстрее 8 минут и только при сдаче', () => {
+    const passed = recordExam(emptyProgress(), boss, 12, T0).progress;
+    expect(recordExamFinish(passed, boss, true, SPEEDRUN_SEC, T0).progress.flags.speedrun).toBeUndefined();
+    const fast = recordExamFinish(passed, boss, true, SPEEDRUN_SEC - 1, T0);
+    expect(fast.speedrun).toBe(true);
+    expect(fast.progress.flags.speedrun).toBe(true);
+    const failed = recordExam(emptyProgress(), boss, 2, T0).progress;
+    expect(recordExamFinish(failed, boss, false, 60, T0)).toEqual({ progress: failed, speedrun: false });
   });
 
   it('XP за босса начисляется один раз, финальный даёт 500, ачивки открываются', () => {
-    let p = recordExam(emptyProgress(), boss, 12, 600, T0).progress;
+    let p = recordExam(emptyProgress(), boss, 12, T0).progress;
     expect(computeXp(p, content)).toBe(200);
-    p = recordExam(p, boss, 12, 600, T0 + 1).progress;
+    p = recordExam(p, boss, 12, T0 + 1).progress;
     expect(computeXp(p, content)).toBe(200);
     expect(evaluate(p, content)).toContain('first-boss');
-    p = recordExam(p, exam('final'), 20, 600, T0 + 2).progress;
+    p = recordExam(p, exam('final'), 20, T0 + 2).progress;
     expect(computeXp(p, content)).toBe(700);
     expect(evaluate(p, content)).toContain('all-bosses');
   });
@@ -94,10 +110,10 @@ describe('блокировка финала', () => {
     const final = exam('final');
     let p = emptyProgress();
     expect(missingRequirements(p, final).sort()).toEqual(['boss-backend', 'boss-de', 'boss-sql']);
-    for (const id of ['boss-backend', 'boss-sql']) p = recordExam(p, exam(id), 12, 600, T0).progress;
-    p = recordExam(p, exam('boss-de'), 3, 600, T0).progress; // провал не считается
+    for (const id of ['boss-backend', 'boss-sql']) p = recordExam(p, exam(id), 12, T0).progress;
+    p = recordExam(p, exam('boss-de'), 3, T0).progress; // провал не считается
     expect(missingRequirements(p, final)).toEqual(['boss-de']);
-    p = recordExam(p, exam('boss-de'), 11, 600, T0).progress;
+    p = recordExam(p, exam('boss-de'), 11, T0).progress;
     expect(missingRequirements(p, final)).toEqual([]);
     expect(missingRequirements(p, exam('boss-sql'))).toEqual([]);
   });

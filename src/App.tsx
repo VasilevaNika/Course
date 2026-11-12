@@ -1,27 +1,17 @@
 import { useEffect } from 'react';
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { content } from './lib/content';
-import MapPage from './pages/MapPage';
-import TopicPage from './pages/TopicPage';
-import SettingsPage from './pages/SettingsPage';
-import AchievementsPage from './pages/AchievementsPage';
-import CouponPage from './pages/CouponPage';
-import ExamListPage from './pages/ExamListPage';
-import ExamRunPage from './pages/ExamRunPage';
 import Toasts from './components/Toasts';
 
-function ScrollToTop() {
+/** Общий каркас: шапка, тосты и страница с анимацией появления. */
+export default function App() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  return null;
-}
 
-export default function App() {
   return (
     <>
-      <ScrollToTop />
       <header className="topbar">
         <div className="container topbar__inner">
           <Link to="/" className="logo">
@@ -39,22 +29,15 @@ export default function App() {
       </header>
       <Toasts />
       <main className="container main">
-        <Routes>
-          <Route path="/" element={<MapPage />} />
-          <Route path="/topic/:id" element={<TopicPage />} />
-          <Route path="/exam" element={<ExamListPage />} />
-          <Route path="/exam/:id" element={<ExamRunPage />} />
-          <Route path="/achievements" element={<AchievementsPage />} />
-          <Route path="/coupon/:id" element={<CouponPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="page" key={pathname}>
+          <Outlet />
+        </div>
       </main>
     </>
   );
 }
 
-function NotFound() {
+export function NotFound() {
   return (
     <div className="card">
       <h1>Такой страницы нет</h1>
