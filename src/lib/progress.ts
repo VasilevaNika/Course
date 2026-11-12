@@ -16,6 +16,11 @@ export type Progress = {
   reviews: number; // успешные повторения
   perfectQuizzes: number; // мини-тесты 3/3
   materialsOpened: Record<string, true>; // ключ `${topicId}:${index}`
+  /**
+   * Отметки materialsOpened уже по новому списку материалов (с полем lang).
+   * Без флага прогресс старый: индексы материалов поменялись, отметки сбрасываются при загрузке.
+   */
+  materialsV2?: true;
   notes: Record<string, string>;
   exams: Record<string, ExamProgress>;
   activeDays: Record<string, number>; // 'YYYY-MM-DD' (локальная дата) -> тем пройдено за день
@@ -44,6 +49,7 @@ export function emptyProgress(now = Date.now()): Progress {
     reviews: 0,
     perfectQuizzes: 0,
     materialsOpened: {},
+    materialsV2: true,
     notes: {},
     exams: {},
     activeDays: {},
@@ -88,7 +94,9 @@ export function normalizeProgress(input: unknown): Progress {
     topics: rec(input.topics, (x): x is TopicProgress => isObj(x) && typeof x.doneAt === 'number' && typeof x.best === 'number'),
     reviews: num(input.reviews, 0),
     perfectQuizzes: num(input.perfectQuizzes, 0),
-    materialsOpened: rec(input.materialsOpened, (x): x is true => x === true),
+    // Старый прогресс (без materialsV2): индексы материалов указывают на старый список — сбрасываем.
+    materialsOpened: input.materialsV2 === true ? rec(input.materialsOpened, (x): x is true => x === true) : {},
+    materialsV2: true,
     notes: rec(input.notes, (x): x is string => typeof x === 'string'),
     exams: rec(input.exams, (x): x is ExamProgress => isObj(x) && typeof x.attempts === 'number' && typeof x.best === 'number'),
     activeDays: rec(input.activeDays, (x): x is number => typeof x === 'number'),

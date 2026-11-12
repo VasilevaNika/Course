@@ -123,6 +123,12 @@ a.quick__card:hover { background: var(--accent-soft); }
 .material__title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .material__mark { font-size: 0.8rem; color: var(--ok); white-space: nowrap; }
 .material--opened { background: #fbfbf8; }
+.material-group + .material-group { margin-top: 18px; }
+.material-group__title { font-family: var(--font-text); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 8px; }
+.material__lang {
+  flex: none; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px;
+}
 
 .notes__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .notes {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useProgress } from '../ProgressContext';
-import { allTopics, content, findTopic, type Block, type Topic } from '../lib/content';
+import { allTopics, content, findTopic, groupMaterials, type Block, type Topic } from '../lib/content';
 import { isExamPassed, missingRequirements } from '../lib/exam';
 import { confetti } from '../lib/confetti';
 import { DAY_MS, lastTouch, markMaterialOpened, REVIEW_MIN_DAYS, setNote } from '../lib/progress';
@@ -67,26 +67,37 @@ function TopicView({ topic, block }: { topic: Topic; block: Block }) {
 
       <section className="card">
         <h2>Материалы</h2>
-        <ul className="materials">
-          {topic.materials.map((m, i) => {
-            const opened = progress.materialsOpened[`${topic.id}:${i}`];
-            return (
-              <li key={m.url}>
-                <a
-                  href={m.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`material ${opened ? 'material--opened' : ''}`}
-                  onClick={() => update((p) => markMaterialOpened(p, topic.id, i))}
-                >
-                  <span className="material__type">{m.type}</span>
-                  <span className="material__title">{m.title}</span>
-                  <span className="material__mark">{opened ? 'открыто' : ''}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+        {groupMaterials(topic.materials).map((group) => (
+          <div key={group.type} className="material-group">
+            <h3 className="material-group__title">
+              {group.label} <span className="muted">{group.items.length}</span>
+            </h3>
+            <ul className="materials">
+              {group.items.map(({ material: m, index }) => {
+                const opened = progress.materialsOpened[`${topic.id}:${index}`];
+                return (
+                  <li key={m.url}>
+                    <a
+                      href={m.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`material ${opened ? 'material--opened' : ''}`}
+                      onClick={() => update((p) => markMaterialOpened(p, topic.id, index))}
+                    >
+                      <span className="material__title">{m.title}</span>
+                      {m.lang === 'en' && (
+                        <span className="material__lang" title="На английском">
+                          EN
+                        </span>
+                      )}
+                      <span className="material__mark">{opened ? 'открыто' : ''}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </section>
 
       <Notes topicId={topic.id} />
