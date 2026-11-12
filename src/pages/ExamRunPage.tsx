@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useBlocker, useParams } from 'react-router-dom';
 import { useProgress } from '../ProgressContext';
 import { content, type Exam } from '../lib/content';
 import {
@@ -7,12 +7,16 @@ import {
   formatTime,
   missingRequirements,
   recordExam,
+  recordExamFinish,
   recordOpenAnswers,
+  SPEEDRUN_SEC,
   type ExamOutcome,
   type ExamSet,
   type SelfRating,
 } from '../lib/exam';
+import { clearRun, loadRun, saveRun, type RunPhase } from '../lib/examRun';
 import { computeXp } from '../lib/game';
+import { confetti } from '../lib/confetti';
 
 export default function ExamRunPage() {
   const { id = '' } = useParams();
@@ -27,8 +31,7 @@ export default function ExamRunPage() {
       </div>
     );
   }
-  const missing = missingRequirements(progress, exam);
-  if (missing.length) {
+  if (missingRequirements(progress, exam).length) {
     return (
       <div className="card">
         <h1>{exam.title}</h1>
@@ -40,59 +43,105 @@ export default function ExamRunPage() {
   return <ExamRun key={exam.id} exam={exam} />;
 }
 
-type Phase = 'intro' | 'mcq' | 'result' | 'open' | 'done';
+type Phase = 'intro' | RunPhase | 'done';
 
 const RATING_LABEL: Record<SelfRating, string> = { good: 'знала', partial: 'частично', bad: 'не знала' };
 
 function ExamRun({ exam }: { exam: Exam }) {
   const { progress, replace, update } = useProgress();
-  const [set, setSet] = useState<ExamSet>(() => buildExam(content, exam));
-  const [phase, setPhase] = useState<Phase>('intro');
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>([]);
-  const [startedAt, setStartedAt] = useState(0);
-  const [outcome, setOutcome] = useState<ExamOutcome | null>(null);
-  const [xpGain, setXpGain] = useState(0);
+  // Незаконченный бой этого босса продолжается с того же места.
+  const [saved] = useState(() => loadRun(exam.id));
+  const [set, setSet] = useState<ExamSet>(() => saved?.set ?? buildExam(content, exam));
+  const [phase, setPhase] = useState<Phase>(saved?.phase ?? 'intro');
+  const [index, setIndex] = useState(saved?.index ?? 0);
+  const [answers, setAnswers] = useState<(number | null)[]>(saved?.answers ?? []);
+  const [startedAt, setStartedAt] = useState(saved?.startedAt ?? 0);
+  const [outcome, setOutcome] = useState<ExamOutcome | null>(saved?.outcome ?? null);
+  const [xpGain, setXpGain] = useState(saved?.xpGain ?? 0);
+  const [ratings, setRatings] = useState<SelfRating[]>(saved?.ratings ?? []);
   const [revealed, setRevealed] = useState(false);
-  const [ratings, setRatings] = useState<SelfRating[]>([]);
+  const [totalSec, setTotalSec] = useState(0);
+  const [speedrun, setSpeedrun] = useState(false);
 
-  // Предупредить о потере попытки при закрытии вкладки посреди боя.
+  const active = phase === 'mcq' || phase === 'result' || phase === 'open';
+
+  // Сохраняем бой после каждого шага.
   useEffect(() => {
-    if (phase !== 'mcq' && phase !== 'open') return;
+    if (phase === 'mcq' || phase === 'result' || phase === 'open') {
+      saveRun({ v: 1, examId: exam.id, set, phase, index, answers, startedAt, outcome, ratings, xpGain });
+    }
+  }, [exam.id, set, phase, index, answers, startedAt, outcome, ratings, xpGain]);
+
+  // Уход по меню посреди боя — спросить. Бой сохранён, так что это не потеря, а пауза.
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => active && currentLocation.pathname !== nextLocation.pathname,
+  );
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    if (window.confirm('Выйти из боя? Он сохранится — вернёшься и продолжишь с этого места. Таймер при этом идёт.')) {
+      blocker.proceed();
+    } else {
+      blocker.reset();
+    }
+  }, [blocker]);
+
+  // Закрытие вкладки посреди боя.
+  useEffect(() => {
+    if (!active) return;
     const onUnload = (e: BeforeUnloadEvent) => e.preventDefault();
     window.addEventListener('beforeunload', onUnload);
     return () => window.removeEventListener('beforeunload', onUnload);
-  }, [phase]);
+  }, [active]);
 
   function start() {
     setSet(buildExam(content, exam));
     setAnswers(Array(exam.mcq).fill(null));
     setIndex(0);
     setOutcome(null);
+    setXpGain(0);
     setRatings([]);
     setRevealed(false);
+    setSpeedrun(false);
     setStartedAt(Date.now());
     setPhase('mcq');
     window.scrollTo(0, 0);
   }
 
-  function finishMcq(final: (number | null)[]) {
-    const timeSec = Math.round((Date.now() - startedAt) / 1000);
-    const correct = final.filter((a, i) => a !== null && set.mcq[i].options[a].correct).length;
-    const r = recordExam(progress, exam, correct, timeSec);
+  function finishMcq() {
+    const correct = answers.filter((a, i) => a !== null && set.mcq[i].options[a].correct).length;
+    const r = recordExam(progress, exam, correct);
     setXpGain(computeXp(r.progress, content) - computeXp(progress, content));
     replace(r.progress);
     setOutcome(r.outcome);
     setPhase('result');
     window.scrollTo(0, 0);
+    if (r.outcome.passed) confetti(2);
   }
 
   function rate(r: SelfRating) {
     update((p) => recordOpenAnswers(p, [r]));
-    setRatings((x) => [...x, r]);
+    const nextRatings = [...ratings, r];
+    setRatings(nextRatings);
     setRevealed(false);
-    if (index + 1 < set.open.length) setIndex(index + 1);
-    else setPhase('done');
+    if (index + 1 < set.open.length) {
+      setIndex(index + 1);
+      return;
+    }
+    // Конец боя: время считается целиком — тест и открытые вопросы.
+    const sec = Math.round((Date.now() - startedAt) / 1000);
+    setTotalSec(sec);
+    const fin = recordExamFinish(progress, exam, Boolean(outcome?.passed), sec);
+    if (fin.progress !== progress) update((p) => recordExamFinish(p, exam, Boolean(outcome?.passed), sec).progress);
+    setSpeedrun(fin.speedrun);
+    clearRun();
+    setPhase('done');
+    window.scrollTo(0, 0);
+  }
+
+  function abandon() {
+    if (!window.confirm('Бросить бой? Результат тестовой части, если она пройдена, уже сохранён.')) return;
+    clearRun();
+    setPhase('intro');
   }
 
   if (phase === 'intro') {
@@ -105,12 +154,15 @@ function ExamRun({ exam }: { exam: Exam }) {
             {exam.mcq} тестовых вопросов из блоков:{' '}
             {exam.blocks.map((b) => content.blocks.find((x) => x.id === b)?.title).join(', ')}. Время идёт.
           </li>
-          <li>Нужно ответить правильно минимум на {Math.ceil(exam.pass * exam.mcq - 1e-9)} из {exam.mcq} ({Math.round(exam.pass * 100)}%).</li>
           <li>
-            Затем {exam.open} открытых вопроса — ответь вслух или письменно, открой эталон и честно оцени себя.
+            Нужно ответить правильно минимум на {Math.ceil(exam.pass * exam.mcq - 1e-9)} из {exam.mcq} (
+            {Math.round(exam.pass * 100)}%).
           </li>
+          <li>Затем {exam.open} открытых вопроса — ответь вслух или письменно, открой эталон и честно оцени себя.</li>
         </ol>
-        <p className="muted small">Сдать тестовую часть быстрее 8 минут — отдельная ачивка.</p>
+        <p className="muted small">
+          Пройти весь бой быстрее {SPEEDRUN_SEC / 60} минут — отдельная ачивка. Если придётся отвлечься, бой сохранится.
+        </p>
         <div className="row">
           <button className="btn btn--primary" onClick={start}>
             Начать
@@ -138,7 +190,7 @@ function ExamRun({ exam }: { exam: Exam }) {
         <div className="pbar__track exam__progress">
           <div className="pbar__fill" style={{ width: `${(index / set.mcq.length) * 100}%` }} />
         </div>
-        <fieldset className="card question" key={index}>
+        <fieldset className="card question slide-in" key={index}>
           <legend className="sr-only">Вопрос {index + 1}</legend>
           <p className="muted small exam__topic">{q.topicTitle}</p>
           <p className="exam__q">{q.q}</p>
@@ -167,7 +219,7 @@ function ExamRun({ exam }: { exam: Exam }) {
               onClick={() => {
                 const left = answers.filter((a) => a === null).length;
                 if (left && !window.confirm(`Без ответа осталось вопросов: ${left}. Завершить тест?`)) return;
-                finishMcq(answers);
+                finishMcq();
               }}
             >
               Завершить тест
@@ -178,6 +230,9 @@ function ExamRun({ exam }: { exam: Exam }) {
             </button>
           )}
         </div>
+        <button className="link-btn small" onClick={abandon}>
+          Бросить бой
+        </button>
       </div>
     );
   }
@@ -185,18 +240,24 @@ function ExamRun({ exam }: { exam: Exam }) {
   if (phase === 'result' && outcome) {
     return (
       <div className="exam">
-        <div className={`card result ${outcome.passed ? 'result--ok' : 'result--bad'}`}>
+        <div className={`card result pop-in ${outcome.passed ? 'result--ok' : 'result--bad'}`}>
           <span className="eyebrow">{outcome.passed ? 'Босс повержен' : 'Босс устоял'}</span>
           <p className="result__score">
             {outcome.correct} из {outcome.total} · {Math.round(outcome.ratio * 100)}%
           </p>
-          <p>
-            Время: {formatTime(outcome.timeSec)}
-            {outcome.speedrun && ' — спидран!'}
+          <p className="muted small">
+            Время идёт: <Timer startedAt={startedAt} /> — бой закончится после открытых вопросов.
           </p>
           {xpGain > 0 && <p className="xp-gain">+{xpGain} XP</p>}
           {!outcome.passed && <p>Нужно {Math.round(exam.pass * 100)}%. Разбери ошибки ниже и возвращайся.</p>}
-          <button className="btn btn--primary" onClick={() => { setIndex(0); setPhase('open'); window.scrollTo(0, 0); }}>
+          <button
+            className="btn btn--primary"
+            onClick={() => {
+              setIndex(0);
+              setPhase('open');
+              window.scrollTo(0, 0);
+            }}
+          >
             К открытым вопросам
           </button>
         </div>
@@ -238,9 +299,10 @@ function ExamRun({ exam }: { exam: Exam }) {
           <span>
             Открытый вопрос {index + 1} из {set.open.length}
           </span>
-          <span className="muted small">{content.blocks.find((b) => b.id === q.block)?.title}</span>
+          <Timer startedAt={startedAt} />
         </div>
-        <div className="card" key={index}>
+        <div className="card slide-in" key={index}>
+          <p className="muted small exam__topic">{content.blocks.find((b) => b.id === q.block)?.title}</p>
           <p className="exam__q">{q.q}</p>
           <p className="muted small">Ответь вслух, как на собеседовании, или набросай тезисы. Потом сверься с эталоном.</p>
           <textarea className="notes" placeholder="Тезисы ответа (не сохраняются)" />
@@ -249,7 +311,7 @@ function ExamRun({ exam }: { exam: Exam }) {
               Показать эталон
             </button>
           ) : (
-            <>
+            <div className="reveal-answer">
               <h3 className="exam__key-title">Что должно быть в ответе</h3>
               <ul className="recap">
                 {q.key.map((k) => (
@@ -264,9 +326,12 @@ function ExamRun({ exam }: { exam: Exam }) {
                   </button>
                 ))}
               </div>
-            </>
+            </div>
           )}
         </div>
+        <button className="link-btn small" onClick={abandon}>
+          Бросить бой
+        </button>
       </div>
     );
   }
@@ -274,13 +339,14 @@ function ExamRun({ exam }: { exam: Exam }) {
   // done
   const st = progress.exams[exam.id];
   return (
-    <div className="card exam-intro">
+    <div className="card exam-intro pop-in">
       <span className="eyebrow">Собеседование окончено</span>
       <h1>{exam.title}</h1>
       {outcome && (
         <p>
           Тест: {outcome.correct}/{outcome.total} ({Math.round(outcome.ratio * 100)}%) —{' '}
-          {outcome.passed ? 'сдано' : 'не сдано'}, время {formatTime(outcome.timeSec)}.
+          {outcome.passed ? 'сдано' : 'не сдано'}. Весь бой занял {formatTime(totalSec)}
+          {speedrun && ' — спидран!'}.
         </p>
       )}
       <p>
@@ -292,7 +358,8 @@ function ExamRun({ exam }: { exam: Exam }) {
       </p>
       {st && (
         <p className="muted small">
-          Всего попыток: {st.attempts}, лучший результат {Math.round(st.best * 100)}%.
+          Всего попыток: {st.attempts}, лучший результат {Math.round(st.best * 100)}%
+          {st.bestTimeSec !== undefined && `, лучшее время ${formatTime(st.bestTimeSec)}`}.
         </p>
       )}
       <div className="row">

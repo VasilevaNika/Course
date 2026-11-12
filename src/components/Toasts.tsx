@@ -19,13 +19,29 @@ export default function Toasts() {
 
 function ToastItem({ toast }: { toast: Toast }) {
   const { dismissToast } = useProgress();
-  const a = content.achievements.find((x) => x.id === toast.achievementId);
+  const a = toast.kind === 'achievement' ? content.achievements.find((x) => x.id === toast.achievementId) : undefined;
 
   useEffect(() => {
     const t = window.setTimeout(() => dismissToast(toast.id), TOAST_MS);
     return () => window.clearTimeout(t);
   }, [toast.id, dismissToast]);
 
+  if (toast.kind === 'goal') {
+    return (
+      <div className="toast toast--goal">
+        <div className="toast__body">
+          <span className="eyebrow">Цель дня выполнена</span>
+          <strong className="toast__title">
+            {toast.goal} из {toast.goal} — так держать!
+          </strong>
+          <span className="muted small">Серия продолжается. Можно на этом остановиться или взять ещё тему.</span>
+        </div>
+        <button className="toast__close" aria-label="Закрыть" onClick={() => dismissToast(toast.id)}>
+          ×
+        </button>
+      </div>
+    );
+  }
   if (!a) return null;
   return (
     <div className="toast">
