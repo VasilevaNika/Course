@@ -11,7 +11,9 @@ function prepare(questions: QuizQuestion[]): Option[][] {
   return questions.map((q) => shuffle(q.options.map((text, i) => ({ text, correct: i === 0 }))));
 }
 
-export default function Quiz({ topicId, questions }: { topicId: string; questions: QuizQuestion[] }) {
+type Props = { topicId: string; questions: QuizQuestion[]; onPass?: (o: QuizOutcome) => void };
+
+export default function Quiz({ topicId, questions, onPass }: Props) {
   const { progress, replace } = useProgress();
   const [options, setOptions] = useState(() => prepare(questions));
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null));
@@ -28,6 +30,7 @@ export default function Quiz({ topicId, questions }: { topicId: string; question
     setXpGain(computeXp(r.progress, content) - computeXp(progress, content));
     replace(r.progress);
     setOutcome(r.outcome);
+    if (r.outcome.passed) onPass?.(r.outcome);
   }
 
   function retry() {

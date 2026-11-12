@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useProgress } from '../ProgressContext';
-import { allTopics, findTopic, groupMaterials, type Topic } from '../lib/content';
+import { allTopics, content, findTopic, groupMaterials, type Block, type Topic } from '../lib/content';
+import { isExamPassed, missingRequirements } from '../lib/exam';
+import { confetti } from '../lib/confetti';
 import { DAY_MS, lastTouch, markMaterialOpened, REVIEW_MIN_DAYS, setNote } from '../lib/progress';
 import Quiz from '../components/Quiz';
 
@@ -19,10 +21,11 @@ export default function TopicPage() {
     );
   }
   // key сбрасывает локальное состояние (тест, заметки) при переходе на другую тему.
-  return <TopicView key={found.topic.id} topic={found.topic} blockTitle={found.block.title} />;
+  return <TopicView key={found.topic.id} topic={found.topic} block={found.block} />;
 }
 
-function TopicView({ topic, blockTitle }: { topic: Topic; blockTitle: string }) {
+function TopicView({ topic, block }: { topic: Topic; block: Block }) {
+  const blockTitle = block.title;
   const { progress, update } = useProgress();
   const tp = progress.topics[topic.id];
   const idx = allTopics.findIndex((t) => t.id === topic.id);
@@ -99,9 +102,17 @@ function TopicView({ topic, blockTitle }: { topic: Topic; blockTitle: string }) 
 
       <Notes topicId={topic.id} />
 
+      <BossLinks block={block} />
+
       <section className="card">
         <h2>Мини-тест</h2>
-        <Quiz topicId={topic.id} questions={topic.quiz} />
+        <Quiz
+          topicId={topic.id}
+          questions={topic.quiz}
+          onPass={(o) => {
+            if (o.firstPass || o.review) confetti(o.score === o.total ? 1.3 : 0.8);
+          }}
+        />
       </section>
 
       <nav className="pager">
@@ -168,6 +179,41 @@ function Notes({ topicId }: { topicId: string }) {
           setSaved(false);
         }}
       />
+    </section>
+  );
+}
+
+/** Боссы, в которых встречаются вопросы этого блока. */
+function BossLinks({ block }: { block: Block }) {
+  const { progress } = useProgress();
+  const exams = content.exams.filter((e) => e.blocks.includes(block.id));
+  if (!exams.length) return null;
+  const blockDone = block.topics.every((t) => progress.topics[t.id]);
+  return (
+    <section className="card boss-links">
+      <h2>Где это спросят</h2>
+      <p className="muted small">
+        Вопросы блока «{block.title}» попадаются у этих боссов
+        {blockDone ? ' — блок пройден, самое время сразиться.' : '.'}
+      </p>
+      <ul className="boss-links__list">
+        {exams.map((e) => {
+          const locked = missingRequirements(progress, e).length > 0;
+          const passed = isExamPassed(progress, e.id);
+          return (
+            <li key={e.id}>
+              {locked ? (
+                <span className="boss-chip boss-chip--locked">{e.title} · закрыт</span>
+              ) : (
+                <Link to={`/exam/${e.id}`} className={`boss-chip ${passed ? 'boss-chip--passed' : ''}`}>
+                  {e.title}
+                  {passed ? ' · повержен' : ''}
+                </Link>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
