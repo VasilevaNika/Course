@@ -132,8 +132,31 @@ describe('evaluate', () => {
   it('первая тема и новые земли', () => {
     expect(evaluate(withTopics(['a']), mini)).toEqual(['first-topic']);
     expect(evaluate(withTopics(['c']), mini).sort()).toEqual(
-      ['block-clear', 'de-block', 'first-topic', 'new-lands'].sort(),
+      ['block-clear', 'block-de', 'de-block', 'first-topic', 'new-lands'].sort(),
     );
+  });
+
+  it('ачивки с полем block — одно правило по полю, без кода на каждую', () => {
+    const custom: Content = {
+      ...mini,
+      achievements: [
+        { id: 'any-name', title: '', condition: '', reward: '', block: 'py' },
+        { id: 'other', title: '', condition: '', reward: '', block: 'de' },
+        { id: 'no-such-block', title: '', condition: '', reward: '', block: 'zzz' },
+      ],
+    };
+    expect(evaluate(withTopics(['a']), custom)).toEqual([]);
+    expect(evaluate(withTopics(['a', 'b']), custom)).toEqual(['any-name']);
+    expect(evaluate(withTopics(['a', 'b', 'c']), custom).sort()).toEqual(['any-name', 'other']);
+  });
+
+  it('ачивки за блоки из roadmap.json открываются по своему блоку', () => {
+    const blockAch = content.achievements.filter((a) => a.block);
+    expect(blockAch.length).toBe(content.blocks.length);
+    for (const b of content.blocks) {
+      const ids = evaluate(withTopics(b.topics.map((t) => t.id)), content).filter((id) => id.startsWith('block-') && id !== 'block-clear');
+      expect(ids, b.id).toEqual(blockAch.filter((a) => a.block === b.id).map((a) => a.id));
+    }
   });
 
   it('блок и весь курс', () => {
@@ -194,7 +217,7 @@ describe('applyAchievements', () => {
     expect(r1.unlocked).toEqual(['first-topic']);
     expect(r1.progress.achievements).toEqual({ 'first-topic': T0 });
     const r2 = applyAchievements(withTopics(['c'], r1.progress), mini, T0 + 5);
-    expect(r2.unlocked.sort()).toEqual(['block-clear', 'de-block', 'new-lands']);
+    expect(r2.unlocked.sort()).toEqual(['block-clear', 'block-de', 'de-block', 'new-lands']);
     expect(r2.progress.achievements['first-topic']).toBe(T0);
   });
 
