@@ -132,7 +132,7 @@ describe('evaluate', () => {
   it('первая тема и новые земли', () => {
     expect(evaluate(withTopics(['a']), mini)).toEqual(['first-topic']);
     expect(evaluate(withTopics(['c']), mini).sort()).toEqual(
-      ['block-clear', 'block-de', 'de-block', 'first-topic', 'new-lands'].sort(),
+      ['block-de', 'first-topic', 'new-lands'].sort(),
     );
   });
 
@@ -154,14 +154,14 @@ describe('evaluate', () => {
     const blockAch = content.achievements.filter((a) => a.block);
     expect(blockAch.length).toBe(content.blocks.length);
     for (const b of content.blocks) {
-      const ids = evaluate(withTopics(b.topics.map((t) => t.id)), content).filter((id) => id.startsWith('block-') && id !== 'block-clear');
+      const ids = evaluate(withTopics(b.topics.map((t) => t.id)), content).filter((id) => id.startsWith('block-'));
       expect(ids, b.id).toEqual(blockAch.filter((a) => a.block === b.id).map((a) => a.id));
     }
   });
 
   it('блок и весь курс', () => {
     const ids = evaluate(withTopics(['a', 'b', 'c']), mini);
-    expect(ids).toEqual(expect.arrayContaining(['block-clear', 'de-block', 'completionist']));
+    expect(ids).toEqual(expect.arrayContaining(['block-py', 'block-de', 'completionist']));
     expect(evaluate(withTopics(['a', 'c']), mini)).not.toContain('completionist');
   });
 
@@ -217,7 +217,7 @@ describe('applyAchievements', () => {
     expect(r1.unlocked).toEqual(['first-topic']);
     expect(r1.progress.achievements).toEqual({ 'first-topic': T0 });
     const r2 = applyAchievements(withTopics(['c'], r1.progress), mini, T0 + 5);
-    expect(r2.unlocked.sort()).toEqual(['block-clear', 'block-de', 'de-block', 'new-lands']);
+    expect(r2.unlocked.sort()).toEqual(['block-de', 'new-lands']);
     expect(r2.progress.achievements['first-topic']).toBe(T0);
   });
 
