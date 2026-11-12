@@ -126,6 +126,31 @@ describe('normalizeProgress', () => {
     p = setNote(markMaterialOpened(p, 'py-oop', 1, T0), 'py-oop', 'заметка', T0);
     expect(normalizeProgress(JSON.parse(JSON.stringify(p)))).toEqual(p);
   });
+
+  it('старый прогресс без materialsV2: отметки материалов сбрасываются, остальное цело', () => {
+    const old = {
+      version: 1,
+      topics: { 'py-oop': { doneAt: T0, best: 3 } },
+      materialsOpened: { 'py-oop:0': true, 'py-oop:3': true },
+      notes: { 'py-oop': 'заметка' },
+      achievements: { explorer: T0 },
+    };
+    const p = normalizeProgress(old);
+    expect(p.materialsOpened).toEqual({});
+    expect(p.materialsV2).toBe(true);
+    expect(p.topics).toEqual(old.topics);
+    expect(p.notes).toEqual(old.notes);
+    expect(p.achievements).toEqual({ explorer: T0 }); // открытые ачивки не отбираются
+  });
+
+  it('прогресс с materialsV2 сохраняет отметки', () => {
+    const p = normalizeProgress({ version: 1, materialsV2: true, materialsOpened: { 'py-oop:2': true } });
+    expect(p.materialsOpened).toEqual({ 'py-oop:2': true });
+  });
+
+  it('новый прогресс сразу с флагом', () => {
+    expect(emptyProgress().materialsV2).toBe(true);
+  });
 });
 
 describe('shuffle', () => {
