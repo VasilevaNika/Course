@@ -2,7 +2,7 @@
 import type { Content, Exam, OpenQuestion } from './content';
 import { shuffle, type Progress } from './progress';
 
-/** Спидран: сдать тестовую часть быстрее, чем за 8 минут. */
+/** Спидран: пройти весь бой (тест + открытые вопросы) быстрее, чем за 8 минут. */
 export const SPEEDRUN_SEC = 8 * 60;
 
 export type ExamOption = { text: string; correct: boolean };
@@ -49,16 +49,16 @@ export type ExamOutcome = {
   passed: boolean;
   /** Сдан впервые (даёт XP за босса). */
   firstPass: boolean;
-  timeSec: number;
-  speedrun: boolean;
 };
 
-/** Записывает результат тестовой части. Сдано, если доля правильных ≥ exam.pass. */
+/**
+ * Записывает результат тестовой части (сразу после неё, чтобы попытка не терялась,
+ * если открытые вопросы бросить). Сдано, если доля правильных ≥ exam.pass.
+ */
 export function recordExam(
   p: Progress,
   exam: Exam,
   correct: number,
-  timeSec: number,
   now = Date.now(),
 ): { progress: Progress; outcome: ExamOutcome } {
   const total = exam.mcq;
@@ -66,22 +66,39 @@ export function recordExam(
   const passed = ratio >= exam.pass - 1e-9;
   const prev = p.exams[exam.id];
   const firstPass = passed && !prev?.passedAt;
-  const speedrun = passed && timeSec < SPEEDRUN_SEC;
 
   const entry = {
+    ...prev,
     attempts: (prev?.attempts ?? 0) + 1,
     best: Math.max(prev?.best ?? 0, ratio),
     ...(prev?.passedAt ? { passedAt: prev.passedAt } : passed ? { passedAt: now } : {}),
-    ...(passed
-      ? { bestTimeSec: Math.min(prev?.bestTimeSec ?? Infinity, timeSec) }
-      : prev?.bestTimeSec !== undefined
-        ? { bestTimeSec: prev.bestTimeSec }
-        : {}),
   };
 
   const next: Progress = { ...p, updatedAt: now, exams: { ...p.exams, [exam.id]: entry } };
+  return { progress: next, outcome: { correct, total, ratio, passed, firstPass } };
+}
+
+/**
+ * Конец всего боя (тест + открытые вопросы). Время считается целиком.
+ * Для сданной попытки обновляет лучшее время и при < 8 минут ставит флаг спидрана.
+ */
+export function recordExamFinish(
+  p: Progress,
+  exam: Exam,
+  passed: boolean,
+  totalSec: number,
+  now = Date.now(),
+): { progress: Progress; speedrun: boolean } {
+  const prev = p.exams[exam.id];
+  if (!passed || !prev) return { progress: p, speedrun: false };
+  const speedrun = totalSec < SPEEDRUN_SEC;
+  const next: Progress = {
+    ...p,
+    updatedAt: now,
+    exams: { ...p.exams, [exam.id]: { ...prev, bestTimeSec: Math.min(prev.bestTimeSec ?? Infinity, totalSec) } },
+  };
   if (speedrun) next.flags = { ...p.flags, speedrun: true };
-  return { progress: next, outcome: { correct, total, ratio, passed, firstPass, timeSec, speedrun } };
+  return { progress: next, speedrun };
 }
 
 export type SelfRating = 'good' | 'partial' | 'bad';
