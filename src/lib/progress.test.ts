@@ -27,13 +27,14 @@ describe('recordQuiz', () => {
     const { progress, outcome } = recordQuiz(emptyProgress(T0), 'py-oop', 2, 3, T0);
     expect(outcome).toMatchObject({ passed: true, firstPass: true, review: false });
     expect(progress.topics['py-oop']).toEqual({ doneAt: T0, best: 2 });
-    expect(progress.activeDays[dayKey(T0)]).toBe(1);
+    expect(progress.days[dayKey(T0)]).toEqual({ topics: 1, reviews: 0, materials: 0, perfectQuizzes: 0, notes: 0 });
     expect(progress.perfectQuizzes).toBe(0);
   });
 
   it('3/3 с первого раза = идеальный тест', () => {
     const { progress } = recordQuiz(emptyProgress(T0), 'py-oop', 3, 3, T0);
     expect(progress.perfectQuizzes).toBe(1);
+    expect(progress.days[dayKey(T0)].perfectQuizzes).toBe(1);
   });
 
   it('пересдача в тот же день не накручивает счётчики, но улучшает best', () => {
@@ -41,7 +42,7 @@ describe('recordQuiz', () => {
     p = recordQuiz(p, 'py-oop', 3, 3, T0 + 1000).progress;
     expect(p.topics['py-oop'].best).toBe(3);
     expect(p.perfectQuizzes).toBe(1); // впервые довела до 3/3
-    expect(p.activeDays[dayKey(T0)]).toBe(1);
+    expect(p.days[dayKey(T0)]).toMatchObject({ topics: 1, perfectQuizzes: 1 });
     p = recordQuiz(p, 'py-oop', 3, 3, T0 + 2000).progress;
     expect(p.perfectQuizzes).toBe(1);
     expect(p.reviews).toBe(0);
@@ -57,7 +58,7 @@ describe('recordQuiz', () => {
     p = r2.progress;
     expect(p.reviews).toBe(1);
     expect(p.topics['py-oop'].lastReviewAt).toBe(t3);
-    expect(p.activeDays[dayKey(t3)]).toBe(1);
+    expect(p.days[dayKey(t3)]).toMatchObject({ topics: 0, reviews: 1 });
     expect(recordQuiz(p, 'py-oop', 3, 3, t3 + DAY_MS).outcome.review).toBe(false);
   });
 
@@ -89,10 +90,23 @@ describe('карта', () => {
 });
 
 describe('материалы и заметки', () => {
-  it('отметка материала идемпотентна', () => {
-    const p1 = markMaterialOpened(emptyProgress(), 'py-oop', 0);
+  it('отметка материала идемпотентна и считается в день один раз', () => {
+    const p1 = markMaterialOpened(emptyProgress(), 'py-oop', 0, T0);
     expect(p1.materialsOpened).toEqual({ 'py-oop:0': true });
-    expect(markMaterialOpened(p1, 'py-oop', 0)).toBe(p1);
+    expect(p1.days[dayKey(T0)].materials).toBe(1);
+    expect(markMaterialOpened(p1, 'py-oop', 0, T0)).toBe(p1);
+  });
+
+  it('заметка от 50 символов засчитывается в день один раз на тему', () => {
+    const long = 'я'.repeat(50);
+    let p = setNote(emptyProgress(), 'x', 'я'.repeat(49), T0);
+    expect(p.days[dayKey(T0)]).toBeUndefined();
+    p = setNote(p, 'x', long, T0);
+    expect(p.days[dayKey(T0)].notes).toBe(1);
+    p = setNote(setNote(p, 'x', '', T0), 'x', long + '!', T0); // стёрла и написала заново
+    expect(p.days[dayKey(T0)].notes).toBe(1);
+    p = setNote(p, 'y', long, T0);
+    expect(p.days[dayKey(T0)].notes).toBe(2);
   });
 
   it('пустая заметка удаляется', () => {
@@ -148,8 +162,31 @@ describe('normalizeProgress', () => {
     expect(p.materialsOpened).toEqual({ 'py-oop:2': true });
   });
 
-  it('новый прогресс сразу с флагом', () => {
-    expect(emptyProgress().materialsV2).toBe(true);
+  it('новый прогресс сразу с флагом и в version 2', () => {
+    expect(emptyProgress()).toMatchObject({ version: 2, materialsV2: true, days: {} });
+  });
+
+  it('version 2: битые дни и серия чинятся', () => {
+    const p = normalizeProgress({
+      version: 2,
+      days: {
+        '2026-11-10': { topics: 2, quest: { best: 4, total: 5, questionIds: ['a:0', 7] }, chest: true, frozen: 'да' },
+        'не-дата': { topics: 1 },
+        '2026-11-11': 'мусор',
+      },
+      streak: { freezes: 9, freezeAwards: { 'x:7': true, y: 1 } },
+    });
+    expect(p.days).toEqual({
+      '2026-11-10': {
+        topics: 2, reviews: 0, materials: 0, perfectQuizzes: 0, notes: 0,
+        quest: { best: 4, total: 5, questionIds: ['a:0'] }, chest: true,
+      },
+    });
+    expect(p.streak).toEqual({ freezes: 2, freezeAwards: { 'x:7': true }, revengeUsed: {} });
+  });
+
+  it('неизвестная версия отклоняется', () => {
+    expect(() => normalizeProgress({ version: 3 })).toThrow();
   });
 });
 

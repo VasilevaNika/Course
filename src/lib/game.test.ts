@@ -3,20 +3,37 @@ import {
   applyAchievements,
   claimReward,
   computeXp,
-  currentStreak,
   evaluate,
   levelFor,
   levelInfo,
-  longestStreak,
   markRewardIssued,
   rankFor,
   rewardStatus,
 } from './game';
 import { content, type Content } from './content';
-import { DAY_MS, dayKey, emptyProgress, markMaterialOpened, recordQuiz, setNote, type Progress } from './progress';
+import {
+  DAY_MS,
+  dayKey,
+  emptyDay,
+  emptyProgress,
+  markMaterialOpened,
+  recordQuiz,
+  setNote,
+  type DayStats,
+  type Progress,
+} from './progress';
+import { shiftDay } from '../logic/dates';
 
 const T0 = new Date(2026, 10, 10, 14, 0).getTime();
-const day = (offset: number) => dayKey(T0 + offset * DAY_MS);
+const day = (offset: number) => shiftDay(dayKey(T0), offset);
+const stats = (): DayStats => emptyDay();
+const q = (best: number, total: number) => ({ best, total, questionIds: [] as string[] });
+/** Активные дни (по одной теме) с from по to включительно (смещения от T0). */
+function activeRange(from: number, to: number): Progress['days'] {
+  const out: Progress['days'] = {};
+  for (let i = from; i <= to; i++) out[day(i)] = { ...stats(), topics: 1 };
+  return out;
+}
 
 /** Маленький контент для точных проверок. */
 const mini: Content = {
@@ -85,42 +102,24 @@ describe('XP', () => {
   });
 });
 
-describe('серия', () => {
-  it('пусто = 0', () => {
-    expect(currentStreak({}, T0)).toBe(0);
-    expect(longestStreak({})).toBe(0);
+describe('XP за ежедневные квесты', () => {
+  it('тест +40, 5/5 ещё +20, задание +10, сундук +30, реванш +50', () => {
+    const p: Progress = {
+      ...emptyProgress(),
+      days: {
+        [day(-2)]: { ...stats(), quest: q(5, 5), tasks: ['note', 'perfect'], tasksDone: ['note', 'perfect'], chest: true },
+        [day(-1)]: { ...stats(), quest: q(3, 5), tasks: ['note', 'perfect'], tasksDone: ['note'] }, // не сдан
+        [day(0)]: { ...stats(), frozen: true, revenge: true },
+      },
+    };
+    expect(computeXp(p, mini)).toBe(40 + 20 + 2 * 10 + 30 + 10 + 50);
   });
 
-  it('считает до сегодня', () => {
-    const days = { [day(0)]: 1, [day(-1)]: 2, [day(-2)]: 1, [day(-4)]: 1 };
-    expect(currentStreak(days, T0)).toBe(3);
-  });
-
-  it('если сегодня пусто — считает до вчера', () => {
-    const days = { [day(-1)]: 1, [day(-2)]: 1 };
-    expect(currentStreak(days, T0)).toBe(2);
-  });
-
-  it('пропуск позавчера обрывает серию', () => {
-    expect(currentStreak({ [day(-2)]: 1, [day(-3)]: 1 }, T0)).toBe(0);
-  });
-
-  it('нулевые значения не считаются активным днём', () => {
-    expect(currentStreak({ [day(0)]: 0, [day(-1)]: 1 }, T0)).toBe(1);
-  });
-
-  it('через переход на зимнее время и границу месяца/года', () => {
-    const days: Record<string, number> = {};
-    for (const d of ['2026-10-24', '2026-10-25', '2026-10-26', '2026-12-30', '2026-12-31', '2027-01-01'])
-      days[d] = 1;
-    expect(currentStreak(days, new Date(2026, 9, 26, 10).getTime())).toBe(3);
-    expect(longestStreak(days)).toBe(3);
-    expect(currentStreak(days, new Date(2027, 0, 1, 23).getTime())).toBe(3);
-  });
-
-  it('самая длинная серия в истории', () => {
-    const days = { [day(-10)]: 1, [day(-9)]: 1, [day(-8)]: 1, [day(-7)]: 1, [day(-1)]: 1, [day(0)]: 1 };
-    expect(longestStreak(days)).toBe(4);
+  it('лучший результат дня считается один раз; 3/3 при маленьком пуле — без бонуса за 5/5', () => {
+    const p = (quest: ReturnType<typeof q>) => ({ ...emptyProgress(), days: { [day(0)]: { ...stats(), quest } } });
+    expect(computeXp(p(q(4, 5)), mini)).toBe(40);
+    expect(computeXp(p(q(3, 3)), mini)).toBe(40);
+    expect(computeXp(p(q(0, 5)), mini)).toBe(0);
   });
 });
 
@@ -165,8 +164,8 @@ describe('evaluate', () => {
     expect(evaluate(withTopics(['a', 'c']), mini)).not.toContain('completionist');
   });
 
-  it('комбо за день', () => {
-    const p = (n: number) => ({ ...emptyProgress(), activeDays: { [day(0)]: n } });
+  it('комбо за день — по days[d].topics', () => {
+    const p = (n: number) => ({ ...emptyProgress(), days: { [day(0)]: { ...stats(), topics: n, reviews: 9 } } });
     expect(evaluate(p(4), mini)).not.toContain('combo-5');
     expect(evaluate(p(5), mini)).toContain('combo-5');
     expect(evaluate(p(9), mini)).not.toContain('combo-10');
@@ -174,11 +173,96 @@ describe('evaluate', () => {
   });
 
   it('серии по истории и по bestStreak', () => {
-    const three = { ...emptyProgress(), activeDays: { [day(-12)]: 1, [day(-11)]: 1, [day(-10)]: 1 } };
+    const three = { ...emptyProgress(), days: activeRange(-12, -10) };
     expect(evaluate(three, mini)).toContain('streak-3');
     expect(evaluate(three, mini)).not.toContain('streak-7');
     expect(evaluate({ ...emptyProgress(), bestStreak: 7 }, mini)).toEqual(expect.arrayContaining(['streak-3', 'streak-7']));
   });
+
+  it('серии 14/30/50/100 — по bestStreak, не пропадают после сгоревшей серии', () => {
+    const ids = (best: number) => evaluate({ ...emptyProgress(), bestStreak: best }, mini).filter((id) => id.startsWith('streak-'));
+    expect(ids(13)).toEqual(['streak-3', 'streak-7']);
+    expect(ids(14)).toEqual(['streak-3', 'streak-7', 'streak-14']);
+    expect(ids(49)).toEqual(['streak-3', 'streak-7', 'streak-14', 'streak-30']);
+    expect(ids(100)).toEqual(['streak-3', 'streak-7', 'streak-14', 'streak-30', 'streak-50', 'streak-100']);
+  });
+});
+
+describe('evaluate: ежедневные квесты и серия', () => {
+  const withDays = (days: Progress['days'], extra: Partial<Progress> = {}): Progress => ({ ...emptyProgress(), ...extra, days });
+  const has = (p: Progress, id: string) => evaluate(p, mini).includes(id);
+  /** n дней подряд, начиная с offset, с заданной статистикой. */
+  const run = (from: number, n: number, d: Partial<DayStats>) => {
+    const out: Progress['days'] = {};
+    for (let i = 0; i < n; i++) out[day(from + i)] = { ...stats(), ...d };
+    return out;
+  };
+
+  it('dq-first: сданный ежедневный тест; несданный не считается', () => {
+    expect(has(withDays({ [day(0)]: { ...stats(), quest: q(3, 5) } }), 'dq-first')).toBe(false);
+    expect(has(withDays({ [day(0)]: { ...stats(), quest: q(4, 5) } }), 'dq-first')).toBe(true);
+  });
+
+  it('dq-flawless: только 5/5', () => {
+    expect(has(withDays({ [day(0)]: { ...stats(), quest: q(4, 5) } }), 'dq-flawless')).toBe(false);
+    expect(has(withDays({ [day(0)]: { ...stats(), quest: q(3, 3) } }), 'dq-flawless')).toBe(false);
+    expect(has(withDays({ [day(0)]: { ...stats(), quest: q(5, 5) } }), 'dq-flawless')).toBe(true);
+  });
+
+  it('dq-10 и dq-30: число дней со сданным тестом', () => {
+    expect(has(withDays(run(-20, 9, { quest: q(4, 5) })), 'dq-10')).toBe(false);
+    expect(has(withDays(run(-20, 10, { quest: q(4, 5) })), 'dq-10')).toBe(true);
+    expect(has(withDays(run(-40, 29, { quest: q(5, 5) })), 'dq-30')).toBe(false);
+    expect(has(withDays(run(-40, 30, { quest: q(5, 5) })), 'dq-30')).toBe(true);
+  });
+
+  it('dq-chest-7: 7 сундуков, не обязательно подряд', () => {
+    const days = { ...run(-20, 3, { chest: true }), ...run(-10, 3, { chest: true }) };
+    expect(has(withDays(days), 'dq-chest-7')).toBe(false);
+    expect(has(withDays({ ...days, [day(0)]: { ...stats(), chest: true } }), 'dq-chest-7')).toBe(true);
+  });
+
+  it('dq-perfect-week: 7 сундуков подряд; разрыв в один день — не считается', () => {
+    expect(has(withDays(run(-6, 7, { chest: true })), 'dq-perfect-week')).toBe(true);
+    const gap = { ...run(-7, 3, { chest: true }), ...run(-3, 4, { chest: true }) };
+    expect(has(withDays(gap), 'dq-perfect-week')).toBe(false);
+    expect(has(withDays(gap), 'dq-chest-7')).toBe(true);
+  });
+
+  it('dq-weekend: суббота и воскресенье одних выходных', () => {
+    const pass = { ...stats(), quest: q(4, 5) };
+    // 2026-11-14 — суббота, 2026-11-15 — воскресенье.
+    expect(has(withDays({ '2026-11-14': pass, '2026-11-15': pass }), 'dq-weekend')).toBe(true);
+    // Воскресенье и следующая суббота — разные выходные.
+    expect(has(withDays({ '2026-11-08': pass, '2026-11-14': pass }), 'dq-weekend')).toBe(false);
+    expect(has(withDays({ '2026-11-14': pass, '2026-11-15': { ...stats(), quest: q(2, 5) } }), 'dq-weekend')).toBe(false);
+  });
+
+  it('dq-old-guard: по флагу, который ставит ежедневный тест', () => {
+    expect(has(withDays({}, { flags: { oldGuard: true } }), 'dq-old-guard')).toBe(true);
+    expect(has(withDays({}), 'dq-old-guard')).toBe(false);
+  });
+
+  it('streak-freeze: замороженный день; день реванша не считается заморозкой', () => {
+    expect(has(withDays({ [day(-1)]: { ...stats(), frozen: true } }), 'streak-freeze')).toBe(true);
+    const revenge = withDays({ [day(-1)]: { ...stats(), frozen: true, revenge: true } });
+    expect(has(revenge, 'streak-freeze')).toBe(false);
+    expect(has(revenge, 'streak-revenge')).toBe(true);
+  });
+
+  it('streak-phoenix: серия от 7 сгорела, и новая дошла до 7', () => {
+    const first = run(-30, 7, { topics: 1 });
+    expect(has(withDays(first), 'streak-phoenix')).toBe(false);
+    expect(has(withDays({ ...first, ...run(-10, 6, { topics: 1 }) }), 'streak-phoenix')).toBe(false);
+    expect(has(withDays({ ...first, ...run(-10, 7, { topics: 1 }) }), 'streak-phoenix')).toBe(true);
+    // Короткая первая серия не считается.
+    expect(has(withDays({ ...run(-30, 6, { topics: 1 }), ...run(-10, 7, { topics: 1 }) }), 'streak-phoenix')).toBe(false);
+    // Заморозка не рвёт серию — это одна серия, а не «снова».
+    expect(has(withDays({ ...run(-20, 7, { topics: 1 }), [day(-13)]: { ...stats(), frozen: true }, ...run(-12, 7, { topics: 1 }) }), 'streak-phoenix')).toBe(false);
+  });
+});
+
+describe('evaluate', () => {
 
   it('счётчики и флаги', () => {
     let p: Progress = { ...emptyProgress(), perfectQuizzes: 10, reviews: 5, openGood: 5 };
@@ -202,8 +286,18 @@ describe('evaluate', () => {
   it('каждая ачивка из контента имеет правило', () => {
     // Максимальный прогресс должен открыть всё — иначе в roadmap.json появилась ачивка без логики.
     let p: Progress = withTopics(content.blocks.flatMap((b) => b.topics.map((t) => t.id)));
-    p = { ...p, perfectQuizzes: 10, reviews: 5, openGood: 5, bestStreak: 7, flags: { night: true, early: true, speedrun: true } };
-    p = { ...p, activeDays: { [day(0)]: 10 }, exams: { final: { attempts: 1, best: 1, passedAt: T0 } } };
+    p = { ...p, perfectQuizzes: 10, reviews: 5, openGood: 5, bestStreak: 100 };
+    p = { ...p, flags: { night: true, early: true, speedrun: true, oldGuard: true } };
+    const days: Progress['days'] = {};
+    // Две серии по 7 дней с разрывом (феникс), 30 сданных тестов на 5/5 с сундуком (включая выходные),
+    // один замороженный и один восстановленный реваншем день.
+    for (let i = 0; i < 40; i++) {
+      if (i === 8) continue;
+      days[dayKey(T0 - i * DAY_MS)] = { ...stats(), topics: i === 0 ? 10 : 1, quest: q(5, 5), chest: true };
+    }
+    days[dayKey(T0 - 40 * DAY_MS)] = { ...stats(), frozen: true };
+    days[dayKey(T0 - 41 * DAY_MS)] = { ...stats(), frozen: true, revenge: true };
+    p = { ...p, days, exams: { final: { attempts: 1, best: 1, passedAt: T0 } } };
     for (let i = 0; i < 15; i++) p = markMaterialOpened(p, 't', i);
     for (let i = 0; i < 5; i++) p = setNote(p, `t${i}`, 'x');
     expect(evaluate(p, content).sort()).toEqual(content.achievements.map((a) => a.id).sort());
@@ -227,7 +321,7 @@ describe('applyAchievements', () => {
   });
 
   it('обновляет bestStreak и не уменьшает его', () => {
-    const p = { ...emptyProgress(), activeDays: { [day(-1)]: 1, [day(0)]: 1 } };
+    const p = { ...emptyProgress(), days: activeRange(-1, 0) };
     expect(applyAchievements(p, mini, T0).progress.bestStreak).toBe(2);
     expect(applyAchievements({ ...p, bestStreak: 9 }, mini, T0).progress.bestStreak).toBe(9);
   });

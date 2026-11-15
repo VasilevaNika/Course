@@ -3,8 +3,12 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { content } from './lib/content';
 import Toasts from './components/Toasts';
 import AchievementUnlock from './components/AchievementUnlock';
+import Celebration from './components/Celebration';
+import StreakFlame from './components/StreakFlame';
+import StreakPop from './components/StreakPop';
+import StreakBanner from './components/StreakBanner';
 
-/** Общий каркас: шапка, тосты и страница с анимацией появления. */
+/** Общий каркас: шапка с огоньком серии, баннер, тосты и страница с анимацией появления. */
 export default function App() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -22,13 +26,18 @@ export default function App() {
             <NavLink to="/" end>
               Карта
             </NavLink>
+            <NavLink to="/daily">Квест</NavLink>
             <NavLink to="/exam">Боссы</NavLink>
             <NavLink to="/achievements">Ачивки</NavLink>
             <NavLink to="/settings">Настройки</NavLink>
           </nav>
+          <StreakFlame />
         </div>
       </header>
+      <StreakBanner />
+      <StreakPop />
       <Toasts />
+      <Celebration />
       <AchievementUnlock />
       <main className="container main">
         <div className="page" key={pathname}>
