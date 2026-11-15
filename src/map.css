@@ -279,7 +279,18 @@ a.boss-node:hover .boss-node__shape { transform: rotate(45deg) scale(0.9); }
 }
 .explain { animation: page-in 0.35s ease-out both; }
 .result { animation: pop-in 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
-.xp-gain { display: inline-block; animation: xp-float 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) 0.15s both; }
+/* Отдельная плашка на своей строке — кнопка «Пройти ещё раз» уходит ниже, а не прилипает сбоку. */
+.xp-gain {
+  display: block;
+  width: fit-content;
+  margin: 4px 0 14px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 1.05rem;
+  line-height: 1.4;
+  animation: xp-float 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) 0.15s both;
+}
 @keyframes xp-float {
   from { opacity: 0; transform: translateY(12px) scale(0.8); }
   to { opacity: 1; transform: none; }
