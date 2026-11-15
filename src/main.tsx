@@ -12,6 +12,7 @@ import ExamListPage from './pages/ExamListPage';
 import ExamRunPage from './pages/ExamRunPage';
 import './styles.css';
 import './map.css';
+import './unlock.css';
 
 // Data router (а не <HashRouter>) нужен для useBlocker: предупреждение при уходе из боя.
 const router = createHashRouter([

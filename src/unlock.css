@@ -1,0 +1,238 @@
+/* Полноэкранный экран «Ачивка открыта» в духе игр. Конфетти (z-index 100) летит поверх. */
+
+.unlock {
+  --gold-1: #ffe27a;
+  --gold-2: #f5b52e;
+  --gold-3: #c9831a;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 40, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: unlock-fade 0.3s ease-out both;
+}
+.unlock--leaving { animation: unlock-fade-out 0.28s ease-in both; }
+.unlock--leaving .unlock__card { animation: unlock-card-out 0.28s ease-in both; }
+
+.unlock__card {
+  position: relative;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: hidden auto;
+  padding: 0 24px 22px;
+  border-radius: 24px;
+  background: var(--surface);
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(20, 18, 60, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  animation: unlock-card-in 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+.unlock__card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 190px;
+  background: radial-gradient(circle at 50% 60%, var(--accent-soft) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ---------- Сцена с медалью ---------- */
+
+.unlock__stage {
+  position: relative;
+  height: 190px;
+  display: grid;
+  place-items: center;
+}
+
+.unlock__rays {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(245, 181, 46, 0.32) 0deg 9deg, transparent 9deg 24deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%);
+  mask: radial-gradient(circle, #000 18%, transparent 68%);
+  animation: unlock-rays-in 0.7s ease-out 0.15s both, unlock-spin 14s linear 0.15s infinite;
+}
+
+.unlock__ring {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid var(--gold-2);
+  opacity: 0;
+  animation: unlock-ring 1.1s ease-out 0.35s both;
+}
+.unlock__ring--2 { border-color: var(--accent); animation-delay: 0.55s; }
+
+.unlock__sparks { position: absolute; inset: 0; }
+.unlock__sparks span {
+  --angle: calc(var(--i) * 36deg);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  border-radius: 2px;
+  background: var(--gold-2);
+  opacity: 0;
+  animation: unlock-spark 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) 0.4s both;
+}
+.unlock__sparks span:nth-child(even) { background: var(--accent); width: 6px; height: 6px; margin: -3px; }
+
+.unlock__medal {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 32% 28%, var(--gold-1), var(--gold-2) 55%, var(--gold-3));
+  box-shadow:
+    0 0 0 6px #fff,
+    0 0 0 9px var(--gold-2),
+    0 14px 30px rgba(201, 131, 26, 0.45);
+  animation: unlock-medal 0.9s cubic-bezier(0.2, 1.6, 0.4, 1) 0.2s both;
+}
+.unlock__medal-letter {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 0 var(--gold-3), 0 4px 10px rgba(120, 70, 0, 0.35);
+}
+.unlock__shine {
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.75) 50%, transparent 60%);
+  transform: translateX(-120%);
+  animation: unlock-shine 1.1s ease-in-out 1s both, unlock-shine 1.1s ease-in-out 3.6s both;
+}
+
+/* ---------- Текст ---------- */
+
+.unlock__eyebrow,
+.unlock__title,
+.unlock__cond,
+.unlock__xp,
+.unlock__reward,
+.unlock__actions {
+  position: relative;
+  animation: unlock-rise 0.5s cubic-bezier(0.2, 1, 0.4, 1) both;
+}
+.unlock__eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-3);
+  animation-delay: 0.55s;
+}
+.unlock__title {
+  margin: 0 0 6px;
+  font-family: var(--font-head);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  animation-delay: 0.65s;
+}
+.unlock__cond { margin: 0 0 12px; color: var(--muted); animation-delay: 0.75s; }
+.unlock__xp {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-head);
+  font-weight: 700;
+  animation:
+    unlock-rise 0.5s cubic-bezier(0.2, 1, 0.4, 1) 0.85s both,
+    unlock-pulse 1.6s ease-in-out 1.4s 3;
+}
+.unlock__reward {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--warn-soft);
+  border: 1px dashed var(--gold-2);
+  animation-delay: 0.95s;
+}
+.unlock__reward span {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+.unlock__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  animation-delay: 1.05s;
+}
+.unlock__actions .btn { flex: 1 1 140px; }
+
+/* ---------- Кадры ---------- */
+
+@keyframes unlock-fade { from { opacity: 0; } }
+@keyframes unlock-fade-out { to { opacity: 0; } }
+@keyframes unlock-card-in {
+  from { opacity: 0; transform: translateY(30px) scale(0.85); }
+}
+@keyframes unlock-card-out {
+  to { opacity: 0; transform: translateY(10px) scale(0.94); }
+}
+@keyframes unlock-rays-in { from { opacity: 0; scale: 0.4; } }
+@keyframes unlock-spin { to { rotate: 360deg; } }
+@keyframes unlock-ring {
+  0% { opacity: 0.9; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+@keyframes unlock-spark {
+  0% { opacity: 1; transform: rotate(var(--angle)) translateY(0) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--angle)) translateY(-92px) scale(0.4); }
+}
+@keyframes unlock-medal {
+  0% { opacity: 0; transform: scale(0.2) rotate(-200deg); }
+  70% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes unlock-shine {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
+@keyframes unlock-rise {
+  from { opacity: 0; transform: translateY(12px); }
+}
+@keyframes unlock-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(79, 70, 229, 0); }
+}
+
+@media (max-width: 420px) {
+  .unlock__stage { height: 160px; }
+  .unlock__card::before { height: 160px; }
+  .unlock__rays { width: 240px; height: 240px; }
+  .unlock__medal { width: 88px; height: 88px; }
+  .unlock__medal-letter { font-size: 2.2rem; }
+  .unlock__title { font-size: 1.3rem; }
+}
+
+/* Без движения: только появление, лучи и искры не нужны. */
+@media (prefers-reduced-motion: reduce) {
+  .unlock__rays,
+  .unlock__ring,
+  .unlock__sparks,
+  .unlock__shine { display: none; }
+}
