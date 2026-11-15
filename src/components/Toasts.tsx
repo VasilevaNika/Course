@@ -7,10 +7,12 @@ const TOAST_MS = 6000;
 
 export default function Toasts() {
   const { toasts } = useProgress();
-  if (!toasts.length) return null;
+  // Ачивки показывает полноэкранный AchievementUnlock, здесь — остальные уведомления.
+  const visible = toasts.filter((t) => t.kind !== 'achievement');
+  if (!visible.length) return null;
   return (
     <div className="toasts" role="status" aria-live="polite">
-      {toasts.slice(-3).map((t) => (
+      {visible.slice(-3).map((t) => (
         <ToastItem key={t.id} toast={t} />
       ))}
     </div>

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { content } from './lib/content';
 import Toasts from './components/Toasts';
+import AchievementUnlock from './components/AchievementUnlock';
 
 /** Общий каркас: шапка, тосты и страница с анимацией появления. */
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
         </div>
       </header>
       <Toasts />
+      <AchievementUnlock />
       <main className="container main">
         <div className="page" key={pathname}>
           <Outlet />
