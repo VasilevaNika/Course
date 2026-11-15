@@ -16,6 +16,8 @@ const LEAVE_MS = 280;
  */
 export default function AchievementUnlock() {
   const { toasts } = useProgress();
+  // Сначала экраны празднования серии/сундука, потом ачивки — по одному полноэкранному за раз.
+  if (toasts.some((t) => t.kind === 'celebration')) return null;
   const current = toasts.find((t) => t.kind === 'achievement');
   if (!current || current.kind !== 'achievement') return null;
   const queued = toasts.filter((t) => t.kind === 'achievement').length - 1;

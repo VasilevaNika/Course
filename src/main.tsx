@@ -10,9 +10,11 @@ import AchievementsPage from './pages/AchievementsPage';
 import CouponPage from './pages/CouponPage';
 import ExamListPage from './pages/ExamListPage';
 import ExamRunPage from './pages/ExamRunPage';
+import DailyPage from './pages/DailyPage';
 import './styles.css';
 import './map.css';
 import './unlock.css';
+import './daily.css';
 
 // Data router (а не <HashRouter>) нужен для useBlocker: предупреждение при уходе из боя.
 const router = createHashRouter([
@@ -21,6 +23,7 @@ const router = createHashRouter([
     children: [
       { path: '/', element: <MapPage /> },
       { path: '/topic/:id', element: <TopicPage /> },
+      { path: '/daily', element: <DailyPage /> },
       { path: '/exam', element: <ExamListPage /> },
       { path: '/exam/:id', element: <ExamRunPage /> },
       { path: '/achievements', element: <AchievementsPage /> },
