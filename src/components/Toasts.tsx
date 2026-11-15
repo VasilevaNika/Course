@@ -1,64 +1,43 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useProgress, type Toast } from '../ProgressContext';
-import { content } from '../lib/content';
 
 const TOAST_MS = 6000;
 
+/**
+ * Небольшие уведомления в углу — сейчас это «цель дня выполнена».
+ * Ачивки и празднования — полноэкранные (AchievementUnlock, Celebration), «+1 к серии» — StreakPop.
+ */
 export default function Toasts() {
   const { toasts } = useProgress();
-  // Ачивки показывает полноэкранный AchievementUnlock, здесь — остальные уведомления.
-  const visible = toasts.filter((t) => t.kind !== 'achievement');
+  const visible = toasts.filter((t): t is Extract<Toast, { kind: 'goal' }> => t.kind === 'goal');
   if (!visible.length) return null;
   return (
     <div className="toasts" role="status" aria-live="polite">
       {visible.slice(-3).map((t) => (
-        <ToastItem key={t.id} toast={t} />
+        <GoalToast key={t.id} id={t.id} goal={t.goal} />
       ))}
     </div>
   );
 }
 
-function ToastItem({ toast }: { toast: Toast }) {
+function GoalToast({ id, goal }: { id: number; goal: number }) {
   const { dismissToast } = useProgress();
-  const a = toast.kind === 'achievement' ? content.achievements.find((x) => x.id === toast.achievementId) : undefined;
 
   useEffect(() => {
-    const t = window.setTimeout(() => dismissToast(toast.id), TOAST_MS);
+    const t = window.setTimeout(() => dismissToast(id), TOAST_MS);
     return () => window.clearTimeout(t);
-  }, [toast.id, dismissToast]);
+  }, [id, dismissToast]);
 
-  if (toast.kind === 'goal') {
-    return (
-      <div className="toast toast--goal">
-        <div className="toast__body">
-          <span className="eyebrow">Цель дня выполнена</span>
-          <strong className="toast__title">
-            {toast.goal} из {toast.goal} — так держать!
-          </strong>
-          <span className="muted small">Серия продолжается. Можно на этом остановиться или взять ещё тему.</span>
-        </div>
-        <button className="toast__close" aria-label="Закрыть" onClick={() => dismissToast(toast.id)}>
-          ×
-        </button>
-      </div>
-    );
-  }
-  if (!a) return null;
   return (
-    <div className="toast">
+    <div className="toast toast--goal">
       <div className="toast__body">
-        <span className="eyebrow">Ачивка открыта</span>
-        <strong className="toast__title">{a.title}</strong>
-        <span className="muted small">
-          {a.condition}
-          {a.reward ? ` · награда: ${a.reward}` : ''}
-        </span>
-        <Link to="/achievements" className="small" onClick={() => dismissToast(toast.id)}>
-          К ачивкам
-        </Link>
+        <span className="eyebrow">Цель дня выполнена</span>
+        <strong className="toast__title">
+          {goal} из {goal} — так держать!
+        </strong>
+        <span className="muted small">Серия продолжается. Можно на этом остановиться или взять ещё тему.</span>
       </div>
-      <button className="toast__close" aria-label="Закрыть" onClick={() => dismissToast(toast.id)}>
+      <button className="toast__close" aria-label="Закрыть" onClick={() => dismissToast(id)}>
         ×
       </button>
     </div>

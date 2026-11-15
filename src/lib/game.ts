@@ -1,6 +1,8 @@
 // Геймификация: XP, уровни, ранги, серия дней, ачивки. Только чистые функции.
 import type { Content } from './content';
-import { dayKey, type Progress } from './progress';
+import type { Progress } from './progress';
+import { shiftDay, weekdayMon } from '../logic/dates';
+import { longestStreak, questPassed, questPerfect, streakRuns } from '../logic/streak';
 
 export const XP = {
   topic: 50,
@@ -11,6 +13,11 @@ export const XP = {
   boss: 200,
   finalBoss: 500,
   achievement: 30,
+  dailyQuest: 40, // ежедневный тест сдан (раз в день)
+  dailyPerfect: 20, // ежедневный тест на 5/5
+  dailyTask: 10, // побочное задание
+  chest: 30, // сундук дня
+  revenge: 50, // серия восстановлена реваншем
 } as const;
 
 export const XP_PER_LEVEL = 250;
@@ -28,6 +35,13 @@ export function computeXp(p: Progress, content: Content): number {
     if (p.exams[exam.id]?.passedAt) xp += exam.id === FINAL_EXAM_ID ? XP.finalBoss : XP.boss;
   const known = new Set(content.achievements.map((a) => a.id));
   xp += Object.keys(p.achievements).filter((id) => known.has(id)).length * XP.achievement;
+  for (const d of Object.values(p.days)) {
+    if (questPassed(d)) xp += XP.dailyQuest;
+    if (questPassed(d) && questPerfect(d)) xp += XP.dailyPerfect;
+    xp += (d.tasksDone?.length ?? 0) * XP.dailyTask;
+    if (d.chest) xp += XP.chest;
+    if (d.revenge) xp += XP.revenge;
+  }
   return xp;
 }
 
@@ -58,48 +72,7 @@ export function levelInfo(p: Progress, content: Content): LevelInfo {
   return { xp, level, rank: rankFor(level), inLevel: xp - (level - 1) * XP_PER_LEVEL, perLevel: XP_PER_LEVEL };
 }
 
-// ---------- Серия дней ----------
-
-function parseDay(key: string): Date {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d, 12); // полдень — переходы на летнее время не сдвигают дату
-}
-
-function shiftDay(key: string, delta: number): string {
-  const d = parseDay(key);
-  d.setDate(d.getDate() + delta);
-  return dayKey(d.getTime());
-}
-
-const active = (days: Record<string, number>, key: string) => (days[key] ?? 0) > 0;
-
-/** Подряд идущие активные дни до сегодня (или до вчера, если сегодня ещё пусто). */
-export function currentStreak(days: Record<string, number>, now = Date.now()): number {
-  let key = dayKey(now);
-  if (!active(days, key)) key = shiftDay(key, -1);
-  let n = 0;
-  while (active(days, key)) {
-    n++;
-    key = shiftDay(key, -1);
-  }
-  return n;
-}
-
-/** Самая длинная серия за всю историю. */
-export function longestStreak(days: Record<string, number>): number {
-  let best = 0;
-  for (const key of Object.keys(days)) {
-    if (!active(days, key) || active(days, shiftDay(key, -1))) continue; // считаем только от начала серии
-    let n = 0;
-    let k = key;
-    while (active(days, k)) {
-      n++;
-      k = shiftDay(k, 1);
-    }
-    best = Math.max(best, n);
-  }
-  return best;
-}
+// Серия дней, заморозки и реванш — в src/logic/streak.ts.
 
 // ---------- Ачивки ----------
 
@@ -112,10 +85,14 @@ export function evaluate(p: Progress, content: Content): string[] {
     const b = content.blocks.find((x) => x.id === blockId);
     return Boolean(b && b.topics.length > 0 && b.topics.every((t) => done(t.id)));
   };
-  const maxDay = Math.max(0, ...Object.values(p.activeDays));
-  const streak = Math.max(p.bestStreak, longestStreak(p.activeDays));
+  const days = Object.entries(p.days).sort(([a], [b]) => (a < b ? -1 : 1));
+  const maxDay = Math.max(0, ...days.map(([, d]) => d.topics));
+  const streak = Math.max(p.bestStreak, longestStreak(p.days));
   const allTopics = content.blocks.flatMap((b) => b.topics);
   const deBlock = content.blocks.find((b) => b.id === 'de');
+  const passedQuests = days.filter(([, d]) => questPassed(d)).length;
+  const chestDays = days.filter(([, d]) => d.chest).map(([k]) => k);
+  const runs = streakRuns(p.days);
 
   const rules: Record<string, () => boolean> = {
     'first-topic': () => count(p.topics) >= 1,
@@ -125,6 +102,23 @@ export function evaluate(p: Progress, content: Content): string[] {
     sniper: () => p.perfectQuizzes >= 10,
     'streak-3': () => streak >= 3,
     'streak-7': () => streak >= 7,
+    'dq-first': () => passedQuests >= 1,
+    'dq-flawless': () => days.some(([, d]) => questPassed(d) && questPerfect(d)),
+    'dq-10': () => passedQuests >= 10,
+    'dq-30': () => passedQuests >= 30,
+    'dq-chest-7': () => chestDays.length >= 7,
+    'dq-perfect-week': () => chestDays.some((k) => [1, 2, 3, 4, 5, 6].every((i) => p.days[shiftDay(k, i)]?.chest)),
+    'dq-weekend': () =>
+      days.some(([k, d]) => weekdayMon(k) === 5 && questPassed(d) && questPassed(p.days[shiftDay(k, 1)])),
+    'dq-old-guard': () => Boolean(p.flags.oldGuard),
+    'streak-14': () => streak >= 14,
+    'streak-30': () => streak >= 30,
+    'streak-50': () => streak >= 50,
+    'streak-100': () => streak >= 100,
+    'streak-freeze': () => days.some(([, d]) => d.frozen && !d.revenge),
+    'streak-revenge': () => days.some(([, d]) => d.revenge),
+    // Была серия от 7, она сгорела (после неё началась другая), и новая тоже дошла до 7.
+    'streak-phoenix': () => runs.some((r, i) => r.length >= 7 && runs.slice(i + 1).some((n) => n.length >= 7)),
     'night-raid': () => Boolean(p.flags.night),
     'morning-farm': () => Boolean(p.flags.early),
     explorer: () => count(p.materialsOpened) >= 15,
@@ -152,7 +146,7 @@ export function applyAchievements(
   content: Content,
   now = Date.now(),
 ): { progress: Progress; unlocked: string[] } {
-  const best = Math.max(p.bestStreak, longestStreak(p.activeDays));
+  const best = Math.max(p.bestStreak, longestStreak(p.days));
   let next = best !== p.bestStreak ? { ...p, bestStreak: best } : p;
   const unlocked = evaluate(next, content).filter((id) => !(id in next.achievements));
   if (unlocked.length) {

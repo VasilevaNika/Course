@@ -1,7 +1,9 @@
 import { useProgress } from '../ProgressContext';
 import { content } from '../lib/content';
-import { currentStreak, levelInfo } from '../lib/game';
-import { todayCount } from '../lib/progress';
+import { levelInfo } from '../lib/game';
+import { dayKey, todayCount } from '../lib/progress';
+import { currentStreak } from '../logic/streak';
+import { daysWord } from '../lib/words';
 
 const RANK_CLASS: Record<string, string> = {
   Железо: 'iron',
@@ -14,19 +16,11 @@ const RANK_CLASS: Record<string, string> = {
   Грандмастер: 'grandmaster',
 };
 
-function daysWord(n: number) {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return 'день';
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'дня';
-  return 'дней';
-}
-
 export default function StatusBar() {
   const { progress } = useProgress();
   const now = Date.now();
   const info = levelInfo(progress, content);
-  const streak = currentStreak(progress.activeDays, now);
+  const streak = currentStreak(progress.days, dayKey(now));
   const today = todayCount(progress, now);
   const goalDone = today >= progress.dailyGoal;
   const pct = Math.round((info.inLevel / info.perLevel) * 100);
