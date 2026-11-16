@@ -139,9 +139,9 @@ describe('evaluate', () => {
     const custom: Content = {
       ...mini,
       achievements: [
-        { id: 'any-name', title: '', condition: '', reward: '', block: 'py' },
-        { id: 'other', title: '', condition: '', reward: '', block: 'de' },
-        { id: 'no-such-block', title: '', condition: '', reward: '', block: 'zzz' },
+        { id: 'any-name', title: '', condition: '', reward: '', rarity: 'silver', block: 'py' },
+        { id: 'other', title: '', condition: '', reward: '', rarity: 'silver', block: 'de' },
+        { id: 'no-such-block', title: '', condition: '', reward: '', rarity: 'silver', block: 'zzz' },
       ],
     };
     expect(evaluate(withTopics(['a']), custom)).toEqual([]);

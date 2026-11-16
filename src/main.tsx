@@ -15,6 +15,7 @@ import './styles.css';
 import './map.css';
 import './unlock.css';
 import './daily.css';
+import './badges.css';
 
 // Data router (а не <HashRouter>) нужен для useBlocker: предупреждение при уходе из боя.
 const router = createHashRouter([

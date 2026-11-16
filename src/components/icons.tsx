@@ -43,6 +43,14 @@ export function ShieldIcon({ size = 20, className }: P) {
   );
 }
 
+export function LockIcon({ size = 14, className }: P) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" aria-hidden fill="currentColor">
+      <path d="M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zm2 0h6V7a3 3 0 0 0-6 0z" />
+    </svg>
+  );
+}
+
 export function CheckIcon({ size = 16, className }: P) {
   return (
     <svg className={className} width={size} height={size} viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

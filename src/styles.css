@@ -242,16 +242,11 @@ a.quick__card:hover { background: var(--accent-soft); }
 /* Ачивки */
 .ach-grid { list-style: none; padding: 0; margin: 20px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .ach { margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.ach__icon {
-  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-  font-family: var(--font-head); font-weight: 700; background: var(--accent); color: #fff;
-}
 .ach__title { margin: 4px 0 0; font-size: 1rem; }
 .ach__cond { margin: 0; }
 .ach__date { margin: 0; color: var(--ok); }
 .ach__reward { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .ach--locked { background: #f1f0eb; }
-.ach--locked .ach__icon { background: #cfcdc5; }
 .ach--locked .ach__title, .ach--locked .ach__reward { color: var(--muted); }
 .btn--small { padding: 6px 12px; font-size: 0.9rem; text-decoration: none; display: inline-block; }
 .pill { font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; }

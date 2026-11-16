@@ -1,5 +1,27 @@
+import { existsSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { allTopics, groupMaterials, type Material } from './content';
+import { allTopics, BADGE_DIR, content, groupMaterials, RARITIES, type Material } from './content';
+
+describe('ачивки в roadmap.json', () => {
+  const dir = resolve(__dirname, '../../public', BADGE_DIR);
+
+  it('у каждой ачивки есть редкость bronze | silver | epic | legendary', () => {
+    for (const a of content.achievements) expect(RARITIES, a.id).toContain(a.rarity);
+  });
+
+  it('новая ачивка = новый SVG: у каждой ачивки есть иконка, у каждой иконки — ачивка', () => {
+    const ids = content.achievements.map((a) => a.id);
+    for (const id of ids) expect(existsSync(resolve(dir, `${id}.svg`)), `нет иконки ${BADGE_DIR}${id}.svg`).toBe(true);
+    const files = readdirSync(dir).filter((f) => f.endsWith('.svg')).map((f) => f.slice(0, -4));
+    expect(files.filter((f) => !ids.includes(f)), 'иконки без ачивки').toEqual([]);
+  });
+
+  it('id ачивок уникальны', () => {
+    const ids = content.achievements.map((a) => a.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
 
 const m = (type: string, title: string, lang: 'ru' | 'en'): Material => ({ type, title, lang, url: `https://x/${title}` });
 
