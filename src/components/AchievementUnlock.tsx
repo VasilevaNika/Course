@@ -4,6 +4,7 @@ import { useProgress } from '../ProgressContext';
 import { content } from '../lib/content';
 import { claimReward, XP } from '../lib/game';
 import { confetti } from '../lib/confetti';
+import Badge from './Badge';
 
 /** Сколько оверлей висит сам, если с ним не взаимодействуют. */
 const AUTO_CLOSE_MS = 6500;
@@ -91,10 +92,7 @@ function Unlock({ toastId, achievementId, queued }: { toastId: number; achieveme
               <span key={i} style={{ '--i': i } as CSSProperties} />
             ))}
           </span>
-          <span className="unlock__medal">
-            <span className="unlock__medal-letter">{a.title.slice(0, 1)}</span>
-            <span className="unlock__shine" />
-          </span>
+          <Badge achievement={a} size={96} flip className="unlock__badge" />
         </div>
 
         <p className="unlock__eyebrow">Ачивка открыта</p>

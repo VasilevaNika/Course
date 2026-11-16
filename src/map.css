@@ -308,11 +308,6 @@ a.boss-node:hover .boss-node__shape { transform: rotate(45deg) scale(0.9); }
 .ach-grid > li:nth-child(n+5) { animation-delay: 0.08s; }
 .ach-grid > li:nth-child(n+9) { animation-delay: 0.13s; }
 .ach-grid > li:nth-child(n+13) { animation-delay: 0.18s; }
-.ach--open .ach__icon { animation: ach-shine 3s ease-in-out infinite; }
-@keyframes ach-shine {
-  0%, 80%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
-  90% { box-shadow: 0 0 0 7px rgba(79, 70, 229, 0.18); }
-}
 .boss-list > li { animation: page-in 0.4s ease-out both; }
 .boss-list > li:nth-child(2) { animation-delay: 0.06s; }
 .boss-list > li:nth-child(3) { animation-delay: 0.12s; }

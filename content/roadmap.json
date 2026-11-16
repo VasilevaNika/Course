@@ -2715,248 +2715,288 @@
       "id": "first-topic",
       "title": "Первая кровь",
       "condition": "Пройти первую тему",
-      "reward": "Шоколадка"
+      "reward": "Шоколадка",
+      "rarity": "bronze"
     },
     {
       "id": "combo-5",
       "title": "Комбо ×5",
       "condition": "Пройти 5 тем за один день",
-      "reward": "Шоколадка покрупнее"
+      "reward": "Шоколадка покрупнее",
+      "rarity": "silver"
     },
     {
       "id": "combo-10",
       "title": "Мегакомбо",
       "condition": "Пройти 10 тем за один день",
-      "reward": "Пицца на ужин"
+      "reward": "Пицца на ужин",
+      "rarity": "epic"
     },
     {
       "id": "flawless",
       "title": "Без урона",
       "condition": "Мини-тест без единой ошибки",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "sniper",
       "title": "Снайпер",
       "condition": "10 мини-тестов без ошибок",
-      "reward": "Шоколадка"
+      "reward": "Шоколадка",
+      "rarity": "silver"
     },
     {
       "id": "streak-3",
       "title": "Серия ×3",
       "condition": "Заниматься 3 дня подряд",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "streak-7",
       "title": "Неделя без пропусков",
       "condition": "Заниматься 7 дней подряд",
-      "reward": "Кино на выбор"
+      "reward": "Кино на выбор",
+      "rarity": "silver"
     },
     {
       "id": "dq-first",
       "title": "Первый квест",
       "condition": "Сдать ежедневный тест",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "dq-flawless",
       "title": "Чистая память",
       "condition": "Сдать ежедневный тест на 5/5",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "dq-10",
       "title": "Квестоманка",
       "condition": "Сдать 10 ежедневных тестов",
-      "reward": "Шоколадка"
+      "reward": "Шоколадка",
+      "rarity": "silver"
     },
     {
       "id": "dq-30",
       "title": "Ветеран квестов",
       "condition": "Сдать 30 ежедневных тестов",
-      "reward": "Вечер настолок вдвоём"
+      "reward": "Вечер настолок вдвоём",
+      "rarity": "epic"
     },
     {
       "id": "dq-chest-7",
       "title": "Охотница за сундуками",
       "condition": "Открыть 7 сундуков дня",
-      "reward": ""
+      "reward": "",
+      "rarity": "silver"
     },
     {
       "id": "dq-perfect-week",
       "title": "Идеальная неделя",
       "condition": "7 дней подряд открывать сундук дня",
-      "reward": "Массаж от меня"
+      "reward": "Массаж от меня",
+      "rarity": "epic"
     },
     {
       "id": "dq-weekend",
       "title": "Без выходных",
       "condition": "Сдать ежедневный тест в субботу и воскресенье одних выходных",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "dq-old-guard",
       "title": "Старая гвардия",
       "condition": "В ежедневном тесте верно ответить на вопрос по теме, пройденной 30+ дней назад",
-      "reward": ""
+      "reward": "",
+      "rarity": "epic"
     },
     {
       "id": "streak-14",
       "title": "Две недели огня",
       "condition": "Серия 14 дней",
-      "reward": "Завтрак в постель"
+      "reward": "Завтрак в постель",
+      "rarity": "silver"
     },
     {
       "id": "streak-30",
       "title": "Месяц в строю",
       "condition": "Серия 30 дней",
-      "reward": "Сертификат в любимый магазин"
+      "reward": "Сертификат в любимый магазин",
+      "rarity": "epic"
     },
     {
       "id": "streak-50",
       "title": "Полсотни",
       "condition": "Серия 50 дней",
-      "reward": ""
+      "reward": "",
+      "rarity": "epic"
     },
     {
       "id": "streak-100",
       "title": "Легенда серии",
       "condition": "Серия 100 дней",
-      "reward": "Большой подарок на выбор"
+      "reward": "Большой подарок на выбор",
+      "rarity": "legendary"
     },
     {
       "id": "streak-freeze",
       "title": "Ледяная броня",
       "condition": "Заморозка впервые спасла серию",
-      "reward": ""
+      "reward": "",
+      "rarity": "silver"
     },
     {
       "id": "streak-revenge",
       "title": "Реванш",
       "condition": "Восстановить серию через второй шанс",
-      "reward": ""
+      "reward": "",
+      "rarity": "epic"
     },
     {
       "id": "streak-phoenix",
       "title": "Феникс",
       "condition": "Потерять серию от 7 дней и снова дойти до 7",
-      "reward": "Шоколадка"
+      "reward": "Шоколадка",
+      "rarity": "legendary"
     },
     {
       "id": "night-raid",
       "title": "Ночной рейд",
       "condition": "Пройти тему после 23:00",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "morning-farm",
       "title": "Утренний фарм",
       "condition": "Пройти тему до 9:00",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "explorer",
       "title": "Исследователь",
       "condition": "Открыть 15 материалов",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "notes-5",
       "title": "Конспектист",
       "condition": "Написать заметки в 5 темах",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "new-lands",
       "title": "Новые земли",
       "condition": "Пройти первую тему блока Data Engineering",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "review-5",
       "title": "Память как сталь",
       "condition": "Успешно повторить 5 тем спустя 3+ дня",
-      "reward": ""
+      "reward": "",
+      "rarity": "silver"
     },
     {
       "id": "first-boss",
       "title": "Первый босс",
       "condition": "Сдать любой симулятор собеседования",
-      "reward": "Ужин в ресторане"
+      "reward": "Ужин в ресторане",
+      "rarity": "silver"
     },
     {
       "id": "speedrun",
       "title": "Спидран",
       "condition": "Сдать симулятор быстрее чем за 8 минут",
-      "reward": "Любимые роллы"
+      "reward": "Любимые роллы",
+      "rarity": "epic"
     },
     {
       "id": "talker",
       "title": "Разговорчивая",
       "condition": "5 открытых вопросов с оценкой «знала»",
-      "reward": ""
+      "reward": "",
+      "rarity": "bronze"
     },
     {
       "id": "all-bosses",
       "title": "Все боссы повержены",
       "condition": "Сдать финального босса",
-      "reward": "Подарок на выбор"
+      "reward": "Подарок на выбор",
+      "rarity": "legendary"
     },
     {
       "id": "completionist",
       "title": "100%",
       "condition": "Пройти все темы курса",
-      "reward": "Главный приз"
+      "reward": "Главный приз",
+      "rarity": "legendary"
     },
     {
       "id": "block-py",
       "title": "Укротительница питона",
       "condition": "Пройти все темы блока «Python: фундамент»",
       "reward": "Кофе и десерт",
-      "block": "py"
+      "block": "py",
+      "rarity": "silver"
     },
     {
       "id": "block-sql",
       "title": "Повелительница запросов",
       "condition": "Пройти все темы блока «SQL»",
       "reward": "Любимые роллы",
-      "block": "sql"
+      "block": "sql",
+      "rarity": "silver"
     },
     {
       "id": "block-pg",
       "title": "Слон приручён",
       "condition": "Пройти все темы блока «PostgreSQL под капотом»",
       "reward": "Пицца на ужин",
-      "block": "pg"
+      "block": "pg",
+      "rarity": "epic"
     },
     {
       "id": "block-be",
       "title": "Бэкенд зачищен",
       "condition": "Пройти все темы блока «Backend»",
       "reward": "Доставка из любимого ресторана",
-      "block": "be"
+      "block": "be",
+      "rarity": "silver"
     },
     {
       "id": "block-inf",
       "title": "Контейнеры в строю",
       "condition": "Пройти все темы блока «Инфраструктура»",
       "reward": "Вечер кооператива: играю с тобой в твою игру",
-      "block": "inf"
+      "block": "inf",
+      "rarity": "silver"
     },
     {
       "id": "block-de",
       "title": "Дата-инженер",
       "condition": "Пройти все темы блока «Data Engineering»",
       "reward": "Поездка на выходные",
-      "block": "de"
+      "block": "de",
+      "rarity": "legendary"
     },
     {
       "id": "block-int",
       "title": "Готова к бою",
       "condition": "Пройти все темы блока «Подготовка к собеседованию»",
       "reward": "Игра в Steam на выбор",
-      "block": "int"
+      "block": "int",
+      "rarity": "epic"
     }
   ]
 }

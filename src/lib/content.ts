@@ -40,14 +40,30 @@ export type Exam = {
   requires?: string[];
 };
 
+export type Rarity = 'bronze' | 'silver' | 'epic' | 'legendary';
+
+/** Порядок редкости — от простой к самой редкой. */
+export const RARITIES: Rarity[] = ['bronze', 'silver', 'epic', 'legendary'];
+export const RARITY_LABEL: Record<Rarity, string> = {
+  bronze: 'Бронза',
+  silver: 'Серебро',
+  epic: 'Эпическая',
+  legendary: 'Легендарная',
+};
+
 export type Achievement = {
   id: string;
   title: string;
   condition: string;
   reward: string;
+  rarity: Rarity;
   /** Ачивка за блок: открывается, когда пройдены все темы этого блока. */
   block?: string;
 };
+
+/** Иконка ачивки: public/badges/achievement-icons/<id>.svg (с учётом base сайта). */
+export const BADGE_DIR = 'badges/achievement-icons/';
+export const badgeUrl = (id: string) => `${import.meta.env.BASE_URL}${BADGE_DIR}${id}.svg`;
 
 export type Content = {
   meta: { title: string; learner: string; goal: string; note: string };
